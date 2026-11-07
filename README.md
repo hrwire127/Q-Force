@@ -344,6 +344,16 @@ The preserved remote depth-comparison CLI remains available:
 python examples/compare_qaoa_depths.py --small --maxiter 30 --shots 2048
 ```
 
+The complete notebook is also available as an executable Python script with
+19 original routes, 14 cities, budget 20 and the notebook defaults:
+
+```powershell
+python Quantum_Railways_Labb.py
+```
+
+See [the script and IBM run guide](docs/RUN_NOTEBOOK_SCRIPT.md) for credential
+configuration, connection checks, hardware execution and job recovery.
+
 No new dependency is required by this merge. The current standalone source APIs
 remain available for notebooks, while the application uses one shared scenario,
 configuration and export snapshot. Historical notebook/output files are evidence

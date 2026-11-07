@@ -21,6 +21,9 @@ for i,c in enumerate(nb['cells']):
     source=''.join(c['source'])
     if i==2:
         source=source.replace('from IPython.display import display,Markdown','')
+    if i==33:
+        # The developer's notebook can opt into hardware; validation never submits.
+        ns['USE_REAL_HARDWARE']=False
     print('Executing cell',i,flush=True)
     exec(compile(source,f'notebook_cell_{i}','exec'),ns)
     if i==4 and args.small:

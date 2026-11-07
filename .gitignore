@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-ibm/
 .pytest_cache/
 tmp/
 output/
+ibm_credentials.local.json
