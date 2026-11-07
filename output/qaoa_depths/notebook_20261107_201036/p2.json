@@ -1,0 +1,1197 @@
+{
+  "status": "ok",
+  "rute_recomandate": [
+    {
+      "id": 0,
+      "cities": [
+        "Iași",
+        "Brașov"
+      ],
+      "cost": 2,
+      "value": 4,
+      "border_cost": 0,
+      "international": false
+    },
+    {
+      "id": 1,
+      "cities": [
+        "Iași",
+        "Cluj-Napoca"
+      ],
+      "cost": 3,
+      "value": 6,
+      "border_cost": 0,
+      "international": false
+    },
+    {
+      "id": 2,
+      "cities": [
+        "Cluj-Napoca",
+        "Brașov"
+      ],
+      "cost": 2,
+      "value": 5,
+      "border_cost": 0,
+      "international": false
+    }
+  ],
+  "ids_rute_recomandate": [
+    0,
+    1,
+    2
+  ],
+  "bitstring_recomandat": "00111",
+  "cost_total": 7,
+  "valoare_totala": 15,
+  "buget": 7,
+  "buget_ramas": 0,
+  "valid": true,
+  "penalizare": 0.7,
+  "probabilitate_plan_recomandat": 0.00732421875,
+  "rata_planuri_valide": 0.51025390625,
+  "probabilitate_optim_valid": 0.152587890625,
+  "energie_medie": -10.160100749860785,
+  "energie_medie_masurata": -10.145312500000001,
+  "energie_medie_initiala": -4.566753601767862,
+  "probabilitate_valida_ideala": 0.5074026550366855,
+  "probabilitate_optim_valid_ideala": 0.1497867268920118,
+  "unghiuri_optime": [
+    2.1150797515782047,
+    3.196312050875906,
+    2.8975307750428345,
+    0.8004597719303538
+  ],
+  "gamma": [
+    2.1150797515782047,
+    2.8975307750428345
+  ],
+  "beta": [
+    3.196312050875906,
+    0.8004597719303538
+  ],
+  "referinta_clasica": {
+    "valoare_optima": 15,
+    "cost_total": 7,
+    "ids_rute": [
+      0,
+      1,
+      2
+    ],
+    "bitstring": "00111"
+  },
+  "diferenta_valoare": 0,
+  "cel_mai_frecvent_plan": {
+    "bitstring": "01010",
+    "bits": [
+      0,
+      1,
+      0,
+      1,
+      0
+    ],
+    "ids_rute": [
+      1,
+      6
+    ],
+    "rute": [
+      {
+        "id": 1,
+        "cities": [
+          "Iași",
+          "Cluj-Napoca"
+        ],
+        "cost": 3,
+        "value": 6,
+        "border_cost": 0,
+        "international": false
+      },
+      {
+        "id": 6,
+        "cities": [
+          "Brașov",
+          "București"
+        ],
+        "cost": 4,
+        "value": 9,
+        "border_cost": 0,
+        "international": false
+      }
+    ],
+    "cost_total": 7,
+    "valoare_totala": 15,
+    "valid": true,
+    "energie": -15.0,
+    "frecventa": 595,
+    "probabilitate": 0.145263671875
+  },
+  "top_planuri": [
+    {
+      "bitstring": "01010",
+      "bits": [
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "ids_rute": [
+        1,
+        6
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "frecventa": 595,
+      "probabilitate": 0.145263671875
+    },
+    {
+      "bitstring": "01101",
+      "bits": [
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "ids_rute": [
+        0,
+        2,
+        6
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 8,
+      "valoare_totala": 18,
+      "valid": false,
+      "energie": -17.3,
+      "frecventa": 408,
+      "probabilitate": 0.099609375
+    },
+    {
+      "bitstring": "10101",
+      "bits": [
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "ids_rute": [
+        0,
+        2,
+        8
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 8,
+      "valoare_totala": 16,
+      "valid": false,
+      "energie": -15.3,
+      "frecventa": 355,
+      "probabilitate": 0.086669921875
+    },
+    {
+      "bitstring": "00010",
+      "bits": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "ids_rute": [
+        1
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 3,
+      "valoare_totala": 6,
+      "valid": true,
+      "energie": 5.199999999999999,
+      "frecventa": 330,
+      "probabilitate": 0.08056640625
+    },
+    {
+      "bitstring": "01001",
+      "bits": [
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "ids_rute": [
+        0,
+        6
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 6,
+      "valoare_totala": 13,
+      "valid": true,
+      "energie": -12.3,
+      "frecventa": 255,
+      "probabilitate": 0.062255859375
+    },
+    {
+      "bitstring": "10011",
+      "bits": [
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "ids_rute": [
+        0,
+        1,
+        8
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 9,
+      "valoare_totala": 17,
+      "valid": false,
+      "energie": -14.2,
+      "frecventa": 230,
+      "probabilitate": 0.05615234375
+    },
+    {
+      "bitstring": "00101",
+      "bits": [
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 4,
+      "valoare_totala": 9,
+      "valid": true,
+      "energie": -2.7,
+      "frecventa": 217,
+      "probabilitate": 0.052978515625
+    },
+    {
+      "bitstring": "10110",
+      "bits": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "ids_rute": [
+        1,
+        2,
+        8
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 9,
+      "valoare_totala": 18,
+      "valid": false,
+      "energie": -15.2,
+      "frecventa": 182,
+      "probabilitate": 0.04443359375
+    },
+    {
+      "bitstring": "11000",
+      "bits": [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "ids_rute": [
+        6,
+        8
+      ],
+      "rute": [
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 8,
+      "valoare_totala": 16,
+      "valid": false,
+      "energie": -15.3,
+      "frecventa": 172,
+      "probabilitate": 0.0419921875
+    },
+    {
+      "bitstring": "11110",
+      "bits": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "ids_rute": [
+        1,
+        2,
+        6,
+        8
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 13,
+      "valoare_totala": 27,
+      "valid": false,
+      "energie": -1.8000000000000007,
+      "frecventa": 170,
+      "probabilitate": 0.04150390625
+    },
+    {
+      "bitstring": "10000",
+      "bits": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "ids_rute": [
+        8
+      ],
+      "rute": [
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 4,
+      "valoare_totala": 7,
+      "valid": true,
+      "energie": -0.7000000000000002,
+      "frecventa": 169,
+      "probabilitate": 0.041259765625
+    },
+    {
+      "bitstring": "10100",
+      "bits": [
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "ids_rute": [
+        2,
+        8
+      ],
+      "rute": [
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 6,
+      "valoare_totala": 12,
+      "valid": true,
+      "energie": -11.3,
+      "frecventa": 157,
+      "probabilitate": 0.038330078125
+    },
+    {
+      "bitstring": "11011",
+      "bits": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "ids_rute": [
+        0,
+        1,
+        6,
+        8
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 13,
+      "valoare_totala": 26,
+      "valid": false,
+      "energie": -0.8000000000000007,
+      "frecventa": 90,
+      "probabilitate": 0.02197265625
+    },
+    {
+      "bitstring": "01110",
+      "bits": [
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "ids_rute": [
+        1,
+        2,
+        6
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 9,
+      "valoare_totala": 20,
+      "valid": false,
+      "energie": -17.2,
+      "frecventa": 80,
+      "probabilitate": 0.01953125
+    },
+    {
+      "bitstring": "11100",
+      "bits": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "ids_rute": [
+        2,
+        6,
+        8
+      ],
+      "rute": [
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 10,
+      "valoare_totala": 21,
+      "valid": false,
+      "energie": -14.7,
+      "frecventa": 71,
+      "probabilitate": 0.017333984375
+    },
+    {
+      "bitstring": "10001",
+      "bits": [
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "ids_rute": [
+        0,
+        8
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 6,
+      "valoare_totala": 11,
+      "valid": true,
+      "energie": -10.3,
+      "frecventa": 70,
+      "probabilitate": 0.01708984375
+    },
+    {
+      "bitstring": "01111",
+      "bits": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2,
+        6
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 11,
+      "valoare_totala": 24,
+      "valid": false,
+      "energie": -12.8,
+      "frecventa": 69,
+      "probabilitate": 0.016845703125
+    },
+    {
+      "bitstring": "01100",
+      "bits": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "ids_rute": [
+        2,
+        6
+      ],
+      "rute": [
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 6,
+          "cities": [
+            "Brașov",
+            "București"
+          ],
+          "cost": 4,
+          "value": 9,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 6,
+      "valoare_totala": 14,
+      "valid": true,
+      "energie": -13.3,
+      "frecventa": 66,
+      "probabilitate": 0.01611328125
+    },
+    {
+      "bitstring": "00100",
+      "bits": [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        2
+      ],
+      "rute": [
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 2,
+      "valoare_totala": 5,
+      "valid": true,
+      "energie": 12.5,
+      "frecventa": 64,
+      "probabilitate": 0.015625
+    },
+    {
+      "bitstring": "10010",
+      "bits": [
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "ids_rute": [
+        1,
+        8
+      ],
+      "rute": [
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 8,
+          "cities": [
+            "București",
+            "Constanța"
+          ],
+          "cost": 4,
+          "value": 7,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 13,
+      "valid": true,
+      "energie": -13.0,
+      "frecventa": 60,
+      "probabilitate": 0.0146484375
+    }
+  ],
+  "counts": {
+    "11011": 90,
+    "11110": 170,
+    "01101": 408,
+    "10101": 355,
+    "10001": 70,
+    "00110": 35,
+    "01010": 595,
+    "00010": 330,
+    "01100": 66,
+    "10011": 230,
+    "00101": 217,
+    "01001": 255,
+    "01111": 69,
+    "10110": 182,
+    "11001": 14,
+    "00011": 27,
+    "01011": 43,
+    "10000": 169,
+    "11000": 172,
+    "00100": 64,
+    "01110": 80,
+    "11100": 71,
+    "10100": 157,
+    "11111": 21,
+    "10010": 60,
+    "00111": 30,
+    "11101": 55,
+    "01000": 5,
+    "10111": 36,
+    "11010": 10,
+    "00001": 10
+  },
+  "optimizare": {
+    "metoda": "COBYLA",
+    "restart_selectat": 0,
+    "rulari": [
+      {
+        "restart": 0,
+        "energie_initiala": -4.566753601767862,
+        "energie_finala": -10.160100749860785,
+        "unghiuri_initiale": [
+          1.1242805922284176,
+          2.0103465003461176,
+          2.9359339525740427,
+          1.1639617341137898
+        ],
+        "unghiuri_optime": [
+          2.1150797515782047,
+          3.196312050875906,
+          2.8975307750428345,
+          0.8004597719303538
+        ],
+        "evaluari": 31,
+        "evaluari_scipy": 30,
+        "status": 2,
+        "succes": false,
+        "mesaj": "Maximum number of function evaluations has been exceeded.",
+        "timp_secunde": 0.05555129999993369
+      }
+    ]
+  },
+  "statistici": {
+    "numar_qubiti": 5,
+    "qaoa_depth": 2,
+    "shots": 4096,
+    "maxiter": 30,
+    "restarts": 1,
+    "evaluari": 31,
+    "timp_antrenare_secunde": 0.05561129999841796,
+    "timp_masurare_secunde": 0.0672885000021779,
+    "timp_total_secunde": 0.12930219999907422,
+    "seed": 2026,
+    "backend": "ideal",
+    "antrenare": "ideal_statevector",
+    "simulare_zgomot": "omisa_mod_ideal",
+    "adancime_circuit": 16,
+    "porti_doi_qubiti": 20,
+    "registru_masurare": "plan"
+  }
+}

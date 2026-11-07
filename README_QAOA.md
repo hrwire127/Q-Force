@@ -83,18 +83,43 @@ ID-uri stabile și coordonatele deja definite în notebook.
 ### Notebook-ul extins corectat
 
 `Quantum_Railways_Labb.ipynb` este adaptat pentru 19 rute. Deschide-l din acest
-repository, păstrând alături `notebook_support.py` și `quantum_optimizer.py`,
+repository, păstrând alături `notebook_support.py`, `quantum_optimizer.py`
+și `qaoa_experiments.py`,
 apoi folosește **Restart Kernel → Run All** și introdu bugetul (de exemplu 20).
 Notebook-ul păstrează datele rutelor și explicațiile laboratorului original.
 Referința completă este stocată în vectori NumPy; se construiesc dicționare doar
 pentru planurile afișate. Graficele mari arată cel mult 20 de rezultate observate.
 
-Antrenarea din notebook are `MAXITER=30`, `RESTARTS=1`, `IDEAL_SHOTS=1024`.
-Poți modifica aceste variabile în celula de antrenare. `RUN_NOISY=False` și
+Antrenarea din notebook compară acum **p=1 și p=2**, fiecare cu `MAXITER=30`,
+`RESTARTS=1`, `IDEAL_SHOTS=4096`, aceleași date, penalizare și seed. Ambele sunt
+rulate de aceeași funcție publică, folosind opțiunile COBYLA ale modulului.
+Desenele circuitelor apar înaintea antrenării; fiecare fir reprezintă un qubit,
+iar blocurile Cost grupează porțile RZ/RZZ. Sunt scheme logice compacte, cu numere
+de porți extrase din circuitele reale, nu planificări de porți pentru hardware.
+La final apar tabelul, graficul comparativ și harta/distribuția pentru p=2.
+Celulele originale de backend și harta inițială continuă să folosească p=1.
+
+Poți modifica setările în celula de antrenare. `RUN_NOISY=False` și
 `RUN_EXTENSION=False` evită implicit simularea cu zgomot și o a doua antrenare.
 Zgomotul poate fi activat numai pentru cel mult 10 rute. După schimbarea unui
 parametru, rulează din nou celulele dependente sau întregul notebook.
 O copie a versiunii anterioare se află în `validation/notebook_before_fix.ipynb`.
+
+Rezultatele complete și desenele sunt salvate automat într-un director nou
+`output/qaoa_depths/notebook_<timestamp>/`: `p1.json`, `p2.json`, `comparison.json`,
+`circuit_p1.png`, `circuit_p2.png`, `comparatie.png`. Comparația poate dura câteva
+minute cu 19 qubiți. Un singur seed și bugetul fix nu demonstrează superioritatea
+generală a unei adâncimi.
+
+Aceeași comparație poate fi executată separat din terminal:
+
+```powershell
+python -X utf8 examples/compare_qaoa_depths.py
+python -X utf8 examples/compare_qaoa_depths.py --small
+```
+
+Modulul `qaoa_experiments.py` furnizează `run_depth_comparison`,
+`draw_qaoa_layers` și `plot_depth_comparison`, fără dependențe suplimentare.
 
 ## Matematică și implementare
 

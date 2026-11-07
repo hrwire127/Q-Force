@@ -1,0 +1,73 @@
+{
+  "configuration": {
+    "routes": 19,
+    "budget": 20,
+    "border": 1,
+    "penalty": 0.7,
+    "maxiter": 30,
+    "restarts": 1,
+    "shots": 4096,
+    "seed": 2026,
+    "backend": "ideal",
+    "optimizer": "COBYLA",
+    "openblas_threads": 1,
+    "omp_threads": 1
+  },
+  "source_unchanged": true,
+  "results": [
+    {
+      "p": 1,
+      "value": 46,
+      "cost": 20,
+      "classical": 46,
+      "gap": 0,
+      "valid_sample_rate": 0.329345703125,
+      "optimal_sample_rate": 0.000244140625,
+      "valid_probability_exact": 0.3211471060556551,
+      "optimal_probability_exact": 0.00013206605999388965,
+      "energy": -26.42789875214911,
+      "training_s": 68.41626899999756,
+      "total_s": 71.4744548000017,
+      "evaluations": 31,
+      "circuit_depth": 38,
+      "two_qubit_gates": 171,
+      "converged": false,
+      "ids": [
+        2,
+        6,
+        7,
+        9,
+        10,
+        15,
+        16
+      ]
+    },
+    {
+      "p": 2,
+      "value": 43,
+      "cost": 20,
+      "classical": 46,
+      "gap": 3,
+      "valid_sample_rate": 0.05810546875,
+      "optimal_sample_rate": 0.0,
+      "valid_probability_exact": 0.057034095490341906,
+      "optimal_probability_exact": 5.502703413513195e-06,
+      "energy": 107.66764225346598,
+      "training_s": 119.40733040000123,
+      "total_s": 124.23211280000032,
+      "evaluations": 31,
+      "circuit_depth": 58,
+      "two_qubit_gates": 342,
+      "converged": false,
+      "ids": [
+        0,
+        1,
+        5,
+        7,
+        12,
+        15,
+        16
+      ]
+    }
+  ]
+}

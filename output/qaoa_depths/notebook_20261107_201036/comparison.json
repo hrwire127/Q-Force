@@ -1,0 +1,32 @@
+[
+  {
+    "p": 1,
+    "value": 15,
+    "cost": 7,
+    "classical": 15,
+    "gap": 0,
+    "valid_rate": 0.505126953125,
+    "optimal_rate": 0.068603515625,
+    "ideal_valid": 0.49758403424055353,
+    "ideal_optimal": 0.06304517256077499,
+    "energy": -6.750648928589829,
+    "evaluations": 31,
+    "training_seconds": 0.030562100000679493,
+    "two_qubit_gates": 10
+  },
+  {
+    "p": 2,
+    "value": 15,
+    "cost": 7,
+    "classical": 15,
+    "gap": 0,
+    "valid_rate": 0.51025390625,
+    "optimal_rate": 0.152587890625,
+    "ideal_valid": 0.5074026550366855,
+    "ideal_optimal": 0.1497867268920118,
+    "energy": -10.160100749860785,
+    "evaluations": 31,
+    "training_seconds": 0.05561129999841796,
+    "two_qubit_gates": 20
+  }
+]

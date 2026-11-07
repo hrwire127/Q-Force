@@ -1,0 +1,74 @@
+Executing cell 2
+Local notebook | Python 3.12.14
+qiskit 2.1.0
+qiskit-aer 0.17.0
+numpy 2.2.6
+scipy 1.15.3
+networkx 3.5
+matplotlib 3.10.3
+Import and statevector smoke test passed.
+Executing cell 4
+Numar orase: 14
+Numar rute nationale: 13
+Numar rute internationale: 6
+Numar total rute: 19
+Numar qubiti logici: 19
+Combinatii posibile: 524288
+Buget: 20
+Executing cell 5
+Executing cell 6
+Executing cell 8
+notebook_cell_6:1: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Our hand-selected plan: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] cost 7 value 15 feasible True
+Executing cell 10
+Executing cell 12
+Exact reference states: 524288
+Penalty: 0.7 route IDs: [2, 6, 9, 15, 16, 17] cost: 21 value: 49 energy: -48.3 feasible: False
+Penalty: 4.0 route IDs: [0, 2, 5, 6, 9, 15, 16] cost: 20 value: 46 energy: -46.0 feasible: True
+Executing cell 14
+Direct and QUBO energies agree on all 524288 plans.
+Executing cell 16
+Direct, QUBO and Ising energies agree on all 524288 states.
+Executing cell 18
+QAOA parameters: ['theta[0]', 'theta[1]']
+Executing cell 20
+Initial probability of each plan: 1.9073486328124943e-06
+Executing cell 21
+Initial uniform expected energy: 108.8
+Executing cell 22
+Ambele rulări pot dura câteva minute pentru 19 qubiți.
+Încep p=1: 19 qubiți, maxiter=30, restarts=1, shots=4096
+D:\Q-Force\Q-Force\qaoa_experiments.py:117: RuntimeWarning: Exponential local simulation cost; noisy mode samples only the final circuit.
+  result=optimizeaza_qaoa(rute,buget,penalizare,p=depth,maxiter=maxiter,restarts=restarts,
+Terminat p=1: valoare=46, cost=20, antrenare=61.87 s
+Încep p=2: 19 qubiți, maxiter=30, restarts=1, shots=4096
+Terminat p=2: valoare=43, cost=20, antrenare=135.98 s
+Initial expected energy: 108.8
+Optimised expected energy: -26.42789875214911
+Evaluations: 31  | local training seconds: 61.867
+Optimiser success: False | status: Maximum number of function evaluations has been exceeded.
+Rezultatele și desenele circuitelor sunt salvate în: D:\Q-Force\Q-Force\output\qaoa_depths\notebook_20261107_201059
+Executing cell 24
+notebook_cell_24:14: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+notebook_cell_24:18: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Executing cell 27
+Executing cell 28
+Executing cell 29
+Noisy compilation omitted: RUN_NOISY=False.
+Executing cell 30
+Noisy sampling omitted: RUN_NOISY=False; ideal results remain available.
+Executing cell 32
+Executing cell 33
+Real QPU execution skipped; the core uses local results above.
+Executing cell 35
+Executing cell 38
+Executing cell 39
+Additional extension training omitted: RUN_EXTENSION=False.
+Executing cell 43
+Executing cell 44
+Executing cell 46
+Executing cell 47
+Executing cell 49
+Executing cell 52
+notebook_cell_52:22: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+FULL NOTEBOOK CHECK OK: 19 qubits; best sample: {'bits': [0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0], 'key': '0011000011011000100', 'route_ids': [2, 6, 7, 9, 10, 15, 16], 'cost': 20, 'score': 46, 'feasible': True, 'energy': -46.0} noisy: False
