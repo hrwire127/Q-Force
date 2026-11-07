@@ -9,39 +9,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from quantum_optimizer import classical_reference, optimizeaza_qaoa
 
 
-DEMO_ROUTES = [
-    {'id': 0, 'cities': ('Iași', 'Brașov'), 'cost': 2, 'value': 4},
-    {'id': 1, 'cities': ('Iași', 'Cluj-Napoca'), 'cost': 3, 'value': 6},
-    {'id': 2, 'cities': ('Cluj-Napoca', 'Brașov'), 'cost': 2, 'value': 5},
-    {'id': 6, 'cities': ('Brașov', 'București'), 'cost': 4, 'value': 9},
-    {'id': 8, 'cities': ('București', 'Constanța'), 'cost': 4, 'value': 7},
-]
+from copy import deepcopy
+from railway_catalog import ROUTES, demo_routes
+
+DEMO_ROUTES = deepcopy(demo_routes)
 
 
 def extended_routes():
-    """Team notebook cell 4 data; border charges added exactly once here."""
-    domestic = [
-        ('Iași', 'Brașov', 2, 4), ('Iași', 'Cluj-Napoca', 3, 6),
-        ('Cluj-Napoca', 'Brașov', 2, 5), ('Timișoara', 'Cluj-Napoca', 4, 7),
-        ('Timișoara', 'Sibiu', 3, 6), ('Sibiu', 'Brașov', 2, 4),
-        ('Brașov', 'București', 4, 9), ('Sibiu', 'Craiova', 2, 4),
-        ('București', 'Constanța', 4, 7), ('Craiova', 'București', 2, 5),
-        ('Cluj-Napoca', 'Sibiu', 2, 4), ('Iași', 'Constanța', 6, 11),
-        ('Satu Mare', 'Cluj-Napoca', 3, 6),
-    ]
-    international = [
-        ('Timișoara', 'Budapesta', 4, 8, 1), ('București', 'Sofia', 4, 7, 1),
-        ('Timișoara', 'Belgrad', 3, 9, 1), ('Iași', 'Chișinău', 3, 10, 1),
-        ('Iași', 'Cernăuți', 4, 11, 1), ('Satu Mare', 'Budapesta', 4, 8, 1),
-    ]
-    routes = [dict(id=i, cities=(u, v), cost=c, value=value,
-                   border_cost=0, international=False)
-              for i, (u, v, c, value) in enumerate(domestic)]
-    for u, v, c, value, border in international:
-        routes.append(dict(id=len(routes), cities=(u, v), cost=c+border,
-                           value=value, border_cost=border, international=True))
-    return routes
-
+    return deepcopy(ROUTES)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

@@ -346,6 +346,7 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
     reference = classical_reference(routes, budget)
     rng = np.random.default_rng(seed)
     runs, evaluations = [], 0
+    history = []
     best_energy, best_angles, best_run = float('inf'), None, None
     training_started = perf_counter()
     for restart in range(restarts):
@@ -361,6 +362,7 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
                 raise ValueError("nonfinite energy during optimization")
             evaluations += 1
             run_evaluations += 1
+            history.append(dict(restart=restart, evaluation=evaluations, energy=energy))
             if energy < run_energy:
                 run_energy, run_angles = energy, np.array(angles, dtype=float, copy=True)
             return energy
@@ -409,7 +411,7 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
         diferenta_valoare=reference['valoare_optima']-best['valoare_totala'] if best else None,
         cel_mai_frecvent_plan=summary['most_frequent'], top_planuri=summary['top'],
         counts=summary['counts'],
-        optimizare=dict(metoda='COBYLA', restart_selectat=best_run, rulari=runs),
+        optimizare=dict(metoda='COBYLA', restart_selectat=best_run, rulari=runs, history=history),
         statistici=dict(numar_qubiti=n, qaoa_depth=p, shots=shots, maxiter=maxiter,
                         restarts=restarts, evaluari=evaluations,
                         timp_antrenare_secunde=float(training_seconds),
