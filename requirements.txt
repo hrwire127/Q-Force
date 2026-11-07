@@ -7,3 +7,5 @@ networkx==3.5
 matplotlib==3.10.3
 streamlit==1.67.0
 altair==6.3.0
+plotly>=6.0,<7
+pytest>=8,<10

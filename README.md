@@ -1,5 +1,35 @@
 # Q-Force
 
+## Aplicația integrată
+
+Aplicația Streamlit unește interfața, harta, enumerarea clasică, modelul
+QUBO/Ising și simularea QAOA locală într-un singur flux:
+**Configurează → Rulează → Analizează → Inspectează harta → Exportă**.
+
+```powershell
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
+```
+
+Deschide apoi `http://localhost:8501`. Nu sunt necesare tokenuri sau variabile
+de mediu pentru simularea locală; hardware IBM nu este folosit de aplicație.
+
+Configurația implicită reproduce experimentul didactic: cinci decizii, buget
+7, penalizare 0,7, adâncime QAOA 1, 2048 măsurări și seed 2026. Aceste valori
+pot fi schimbate în bara laterală. Rezultatul salvat în sesiune este un singur
+snapshot: toate panourile, harta și exporturile HTML/PDF provin din el.
+
+Minimul energiei QUBO este afișat separat de optimul fezabil: penalizarea
+pătratică nu encodează întotdeauna perfect regula `cost <= buget`. Pentru
+baseline, optimul fezabil are scor 15 și cost 7, iar minimul de energie este
+−17,3 pentru planul invalid cu scor 18 și cost 8.
+
+Rulează toate testele cu:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
 ## Soluția clasică optimă
 
 Aplicația Streamlit existentă este în directorul părinte (`../app.py`).
