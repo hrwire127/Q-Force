@@ -1,0 +1,44 @@
+test_metrics_include_all_tied_optima_and_ignore_zero_counts (test_notebook_support.NotebookReferenceTests.test_metrics_include_all_tied_optima_and_ignore_zero_counts) ... ok
+test_notebook_regression_nineteen_route_cells (test_notebook_support.NotebookReferenceTests.test_notebook_regression_nineteen_route_cells) ... ok
+test_vectors_match_every_small_plan (test_notebook_support.NotebookReferenceTests.test_vectors_match_every_small_plan) ... ok
+test_depth_validation (test_qaoa_experiments.DepthComparisonTests.test_depth_validation) ... ok
+test_drawings_match_real_circuit_resources (test_qaoa_experiments.DepthComparisonTests.test_drawings_match_real_circuit_resources) ... ok
+test_notebook_uses_comparison_and_exposes_both_depths (test_qaoa_experiments.DepthComparisonTests.test_notebook_uses_comparison_and_exposes_both_depths) ... ok
+test_paired_training_and_saved_outputs (test_qaoa_experiments.DepthComparisonTests.test_paired_training_and_saved_outputs) ... ok
+test_dp_matches_exhaustive_enumeration (test_quantum_optimizer.ClassicalTests.test_dp_matches_exhaustive_enumeration) ... ok
+test_extended_data_matches_notebook_and_exact_46 (test_quantum_optimizer.ClassicalTests.test_extended_data_matches_notebook_and_exact_46) ... ok
+test_all_direct_qubo_ising_energies (test_quantum_optimizer.MathematicsTests.test_all_direct_qubo_ising_energies) ... ok
+test_cost_layer_phase_including_pairs (test_quantum_optimizer.MathematicsTests.test_cost_layer_phase_including_pairs) ... ok
+test_mixer (test_quantum_optimizer.MathematicsTests.test_mixer) ... ok
+test_original_counterexample (test_quantum_optimizer.MathematicsTests.test_original_counterexample) ... ok
+test_parameters_layers_and_uniform_zero_angles (test_quantum_optimizer.MathematicsTests.test_parameters_layers_and_uniform_zero_angles) ... ok
+test_vectorized_basis_energies (test_quantum_optimizer.MathematicsTests.test_vectorized_basis_energies) ... ok
+test_zero_cost_zero_hamiltonian (test_quantum_optimizer.MathematicsTests.test_zero_cost_zero_hamiltonian) ... ok
+test_bad_counts_rejected (test_quantum_optimizer.SamplingTests.test_bad_counts_rejected) ... ok
+test_counts_budget_and_classical_comparison (test_quantum_optimizer.SamplingTests.test_counts_budget_and_classical_comparison) ... ok
+test_empty_measured_plan_is_valid (test_quantum_optimizer.SamplingTests.test_empty_measured_plan_is_valid) ... ok
+test_measurement_mapping_with_routing (test_quantum_optimizer.SamplingTests.test_measurement_mapping_with_routing) ... ok
+test_multilayer_restarts (test_quantum_optimizer.SamplingTests.test_multilayer_restarts) ... ok
+test_no_valid_sample_never_falls_back (test_quantum_optimizer.SamplingTests.test_no_valid_sample_never_falls_back) ... ok
+test_noisy_small_local_backend (test_quantum_optimizer.SamplingTests.test_noisy_small_local_backend) ... ok
+test_reproducibility (test_quantum_optimizer.SamplingTests.test_reproducibility) ... ok
+test_selection_ties_all_optima_and_most_frequent (test_quantum_optimizer.SamplingTests.test_selection_ties_all_optima_and_most_frequent) ... ok
+test_training_metrics_and_json (test_quantum_optimizer.SamplingTests.test_training_metrics_and_json) ... ok
+test_zero_budget_and_free_routes (test_quantum_optimizer.SamplingTests.test_zero_budget_and_free_routes) ... ok
+test_decoding (test_quantum_optimizer.ValidationTests.test_decoding) ... ok
+test_international_cost_and_order (test_quantum_optimizer.ValidationTests.test_international_cost_and_order) ... ok
+test_invalid_arguments (test_quantum_optimizer.ValidationTests.test_invalid_arguments) ... ok
+test_invalid_routes (test_quantum_optimizer.ValidationTests.test_invalid_routes) ... ok
+test_malformed_coefficients (test_quantum_optimizer.ValidationTests.test_malformed_coefficients) ... ok
+test_resource_limits (test_quantum_optimizer.ValidationTests.test_resource_limits) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 2.702s
+
+OK
+Our hand-selected plan: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] cost 7 value 15 feasible True
+Exact reference states: 524288
+Penalty: 0.7 route IDs: [2, 6, 9, 15, 16, 17] cost: 21 value: 49 energy: -48.3 feasible: False
+Penalty: 4.0 route IDs: [0, 2, 5, 6, 9, 15, 16] cost: 20 value: 46 energy: -46.0 feasible: True
+Direct and QUBO energies agree on all 524288 plans.
+Direct, QUBO and Ising energies agree on all 524288 states.

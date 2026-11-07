@@ -182,3 +182,45 @@ noua valoare optimă clasică **46** la buget 20. Testele verifică toate cele
 Antrenarea QAOA lungă de 19 qubiți nu a fost repetată pentru această modificare;
 rezultatul său trebuie recalculat. Rulările și fișierele JSON din secțiunile
 anterioare sunt rezultate istorice ale configurațiilor precedente.
+
+## Integrare p=1 și p=2 cu desene de circuit
+
+Notebook-ul compară acum automat ambele adâncimi prin aceeași funcție publică:
+19 rute, frontieră 1, buget 20, penalizare 0.7, maxiter=30, restarts=1,
+shots=4096, seed=2026, simulare ideală. Modulul `qaoa_experiments.py` adaugă
+comparația și schemele logice compacte. Fiecare schemă arată toate firele;
+blocurile Cost grupează porțile RZ/RZZ din circuitul Qiskit real. Numerele de
+porți și parametri sunt extrase din circuit, nu introduse ca rezultate simulate.
+Nu sunt adăugate dependențe. Copia notebook-ului dinaintea integrării este
+`validation/notebook_before_depth_comparison.ipynb`.
+
+Verificare finală: **33/33 teste trecute**, fără eșecuri sau teste omise,
+2.702 s raportate de unittest. Jurnal: `validation/unittest_integrated_p2.txt`.
+Sunt verificate desenul versus resursele circuitului, rulările pereche,
+serializarea rezultatelor, fișierele generate și integrarea celulelor notebook.
+
+Au fost executate integral celulele de cod ale notebook-ului, headless, atât cu
+5 rute și backendul noisy opțional activ, cât și cu cele 19 rute actuale.
+Jurnale: `validation/notebook_integrated_p2_small.txt` și
+`validation/notebook_integrated_p2_19.txt`. Afișarea IPython este înlocuită cu un
+no-op de verificator; graficele se construiesc cu Matplotlib Agg. Desenele de 19
+qubiți au fost inspectate vizual. Interfața Jupyter nu a fost automatizată.
+
+Rularea completă cu 19 qubiți a produs:
+
+| p | Cost | Valoare QAOA | Optim clasic | Antrenare | Evaluări | Convergență |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 20 | 46 | 46 | 61.867 s | 31 | Nu, limită evaluări |
+| 2 | 20 | 43 | 46 | 135.978 s | 31 | Nu, limită evaluări |
+
+Counts și unghiurile ambelor rezultate sunt identice cu experimentul separat
+anterior din `validation/p_comparison_seed2026/`; timpii sunt măsurători noi.
+Rezultatele integrării sunt în
+`output/qaoa_depths/notebook_20261107_201059/`, inclusiv JSON complete,
+desenele `circuit_p1.png`, `circuit_p2.png` și graficul `comparatie.png`.
+Un singur seed și bugetul fix nu demonstrează superioritatea generală a p=1.
+
+CLI-ul nou a fost verificat separat pe 5 rute cu maxiter=6, shots=64:
+`examples/compare_qaoa_depths.py --small --maxiter 6 --shots 64`.
+`git diff --check` a trecut, cu avertismentele obișnuite LF/CRLF.
+Datele rutelor au fost comparate cu backup-ul și au rămas neschimbate.

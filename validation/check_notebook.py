@@ -35,5 +35,10 @@ assert sum(ns['ideal_counts'].values())==ns['IDEAL_SHOTS']
 assert ns['classical_best']['score']==(15 if args.small else 46)
 assert ns['best_sample'] is None or ns['best_sample']['cost']<=ns['BUDGET']
 assert ns['backend_counts'] is None or sum(ns['backend_counts'].values())==ns['BACKEND_SHOTS']
+assert set(ns['qaoa_results'])=={1,2}
+for depth,result in ns['qaoa_results'].items():
+    assert len(result['unghiuri_optime'])==2*depth
+    assert sum(result['counts'].values())==ns['IDEAL_SHOTS']
+    assert not result['valid'] or result['cost_total']<=ns['BUDGET']
 print('FULL NOTEBOOK CHECK OK:',ns['N_DECISIONS'],'qubits;',
       'best sample:',ns['best_sample'],'noisy:',ns['backend_counts'] is not None)

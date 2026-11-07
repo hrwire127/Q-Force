@@ -1,0 +1,10 @@
+{
+  "notebook_support.py": "767d2b384fd3a3c75a7e606611251ab0c44ccc1c8fe2b739f3dad4338939997e",
+  "quantum_optimizer.py": "83f999eee0b2a3e60dd8c7839687736eee2752b6d906dabd061b48b003da0eda",
+  "examples\\demo_qaoa.py": "71e858352fecc925aa2fc98531d90d89cba2035d52b4400d4ff5e0efa3cd8eef",
+  "examples\\__init__.py": "5ed19aff827812ca8913021854d4dc3bdea1d29249feb976d792aeee3979d716",
+  "tests\\test_notebook_support.py": "f34fbda11d2ac24ff6fb0f3bcf973dd6708cc15de8e792db494b93d672b7b738",
+  "tests\\test_quantum_optimizer.py": "e3c9792a25190980854f75ddcab976ef2621a8a35d6805dd28a7274528984eea",
+  "tests\\__init__.py": "395b656c62ce66947abd39e731bc36cf675257aed6584ddaf1f820976f291a71",
+  "Quantum_Railways_Labb.ipynb::code": "ad01435be68826f587a7cc62ff92da57bd6dbcc60bbabefa214ef65c4042e072"
+}
