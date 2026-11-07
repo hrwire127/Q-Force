@@ -183,3 +183,73 @@ all seven types, seeded random generation, paths/no paths, disconnected graphs,
 cost semantics, QUBO/Ising equivalence after removal, QAOA original-bit mapping,
 all-routes-closed handling, map colors/click details, frozen reports and the full
 Streamlit baseline/block/run/export/unblock workflow.
+
+## Full QAOA application contract
+
+The existing `zus` commits are ancestors of this feature branch. The actual
+`quantum_optimizer.py` implementation is reused: QUBO/Ising conversion, RZ/RZZ
+cost, RX mixer, Qiskit Statevector expectation, COBYLA restarts, and real Aer
+measurement. No further branch merge or replacement UI is involved.
+
+The current UI calls the typed entry point:
+
+```python
+from experiment import RailwayScenario, SimulationConfig, run_railway_optimization
+
+result = run_railway_optimization(
+    RailwayScenario(routes=selected_routes, incidents=incident_records, time=0),
+    SimulationConfig(budget=7, penalty=0.7, p=1, shots=2048, seed=2026,
+                     maxiter=30, restarts=1, mode='compare',
+                     optimizer='COBYLA', optimizer_tol=1e-4,
+                     transpilation_level=1),
+)
+```
+
+`RailwayScenario` and `SimulationConfig` are dataclass inputs; the pipeline takes
+a deep snapshot and returns the JSON-compatible `ExperimentResult` TypedDict.
+The established `run_experiment` function remains a compatibility entry point to
+the same orchestration. Only the additive construction-score objective and COBYLA
+are implemented; unsupported methods/objectives raise a clear validation error.
+All phases share the effective route list, budget, energy and original-bit mapping.
+
+The result contains:
+
+- Experiment UUID, stable scenario content ID, complete config, selected/available
+  IDs, active incident IDs, software versions and backend settings.
+- Exact complete-enumeration reference, runtime, feasible count, **all** tied
+  feasible optima and **all** tied model minima. The chosen classical plan is
+  cross-checked against the exact DP reference from `zus`.
+- QUBO linear/upper-triangular quadratic/offset coefficients and Ising h/J/constant
+  in the same active-decision order, including the full energy constant.
+- Actual ideal and optional noisy counts in `counts_by_backend`; quantum angles,
+  restart status, initial/final expected energy, objective history and timings.
+- Exact ideal statevector probabilities/statistics stored separately from sampled
+  empirical statistics. Noisy uses the same trained angles and logical `plan`
+  measurement register, with synthetic topology/noise and no real IBM hardware.
+- Reconstructed full original plans for optima, sampled plans, quantum
+  recommendations and the DP reference. Blocked positions remain zero.
+
+UI controls include COBYLA tolerance and transpilation optimization level 0-3.
+Both ideal and noisy sampling use the chosen level and seeded transpiler.
+COBYLA requires at least `2*p+2` evaluations; the UI enforces that minimum and the
+pipeline rejects smaller budgets rather than allowing SciPy to increase them
+silently. Changing a setting invalidates stale results.
+
+Outcome charts show feasible/infeasible probabilities, exact versus finite-shot
+probabilities, classical versus sampled feasible score, convergence, distributions
+and compiled circuit resources. Before/after distributions align **full original
+bitstrings**, not reduced measurement keys. Each scenario's optimal probability
+uses its own reference. Side-by-side geographic overlays are optional controls.
+
+HTML/PDF exports include model coefficients, tie counts and up to 20 listed tied
+plans (complete lists remain in the snapshot), training settings/status/angles,
+exact versus empirical statistics, real ideal/noisy results, comparison charts
+and frozen baseline data. Archived older snapshots remain separately accessible.
+If every route is blocked, no circuit or shots are executed and the empty-plan
+probability is exact; no artificial measurement counts are produced.
+
+Additional regression tests in `tests/test_algorithm_contract.py` verify the
+typed result, all 32 energy equivalences, tied model minima, actual ideal/noisy
+count totals, parameter propagation, unsupported configuration rejection,
+incident optimum `[0,0,1,1,0]` (score 14, cost 6), map switching without retraining,
+and matching HTML/PDF exports through Streamlit. No new dependencies are required.

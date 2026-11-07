@@ -182,6 +182,8 @@ def add_cost(qc, gamma, ising):
         raise ValueError("circuit width must match the Hamiltonian")
     scale = max(1.0, float(np.max(np.abs(h))), float(np.max(np.abs(j))))
     for i, coefficient in enumerate(h):
+        # Keep symbolic zero rotations so even a zero Hamiltonian retains the
+        # public 2*p parameter-binding contract of the original zus circuit.
         qc.rz(2 * gamma * float(coefficient / scale), i)
     for i, k in zip(*np.nonzero(j)):
         qc.rzz(2 * gamma * float(j[i, k] / scale), int(i), int(k))
@@ -263,7 +265,10 @@ def _basis_totals(routes):
     return costs, values
 
 
-def _sample_counts(bound, shots, seed, mode):
+def _sample_counts(bound, shots, seed, mode, optimization_level=1):
+    optimization_level = _integer(optimization_level, 'optimization_level')
+    if optimization_level > 3:
+        raise ValueError('optimization_level must be 0..3')
     measured = bound.copy()
     _add_measurements(measured)
     if mode == 'noisy':
@@ -273,17 +278,19 @@ def _sample_counts(bound, shots, seed, mode):
             num_qubits=width, basis_gates=['id', 'rz', 'sx', 'x', 'cx'],
             coupling_map=[[i, j] for i in range(width) for j in range(width) if abs(i-j) == 1],
             seed=seed, noise_info=True)
-        compiled = transpile(measured, backend, optimization_level=1, seed_transpiler=seed)
+        compiled = transpile(measured, backend, optimization_level=optimization_level, seed_transpiler=seed)
         simulator = AerSimulator.from_backend(backend, method='density_matrix', max_parallel_threads=1)
     else:
         simulator = AerSimulator(method='statevector', max_parallel_threads=1)
-        compiled = transpile(measured, simulator, optimization_level=1, seed_transpiler=seed)
+        compiled = transpile(measured, simulator, optimization_level=optimization_level, seed_transpiler=seed)
     result = simulator.run(compiled, shots=shots, seed_simulator=seed).result()
     # transpile preserves classical plan[i] even when moving logical qubits.
     counts = {str(k): int(v) for k, v in result.get_counts().items()}
     resources = dict(adancime_circuit=int(compiled.depth()),
                      porti_doi_qubiti=sum(inst.operation.num_qubits == 2 for inst in compiled.data),
-                     registru_masurare='plan')
+                     registru_masurare='plan', optimization_level=optimization_level,
+                     backend_name='GenericBackendV2 synthetic + Aer density_matrix' if mode=='noisy' else 'Aer statevector',
+                     seed_simulator=seed, seed_transpiler=seed)
     if compiled.layout is not None:
         resources['mapare_finala'] = [int(i) for i in compiled.layout.final_index_layout(filter_ancillas=True)]
     return counts, resources
@@ -314,7 +321,8 @@ def _summarize_counts(counts, routes, budget, penalty, optimal_value, shots):
 
 
 def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
-                    maxiter=30, seed=2026, restarts=1, backend_mode='ideal') -> dict:
+                    maxiter=30, seed=2026, restarts=1, backend_mode='ideal',
+                    transpilation_level=1, optimizer_tol=1e-4, return_probabilities=False) -> dict:
     """Train exact ideal expectation via COBYLA, then sample a real Qiskit circuit.
 
     Recommendation is the highest-value VALID OBSERVED plan. No classical fallback.
@@ -327,6 +335,12 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
     maxiter = _integer(maxiter, 'maxiter', 1)
     restarts = _integer(restarts, 'restarts', 1)
     seed = _integer(seed, 'seed')
+    transpilation_level = _integer(transpilation_level, 'transpilation_level')
+    if transpilation_level > 3:
+        raise ValueError('transpilation_level must be 0..3')
+    optimizer_tol = _penalty(optimizer_tol)
+    if not isinstance(return_probabilities,bool):
+        raise ValueError('return_probabilities must be boolean')
     if seed > 2**32 - 1:
         raise ValueError("seed must be <= 2**32 - 1")
     if backend_mode not in ('ideal', 'noisy'):
@@ -369,7 +383,7 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
 
         run_started = perf_counter()
         initial_energy = objective(initial_angles)
-        result = minimize(objective, initial_angles, method='COBYLA', options={'maxiter': maxiter})
+        result = minimize(objective, initial_angles, method='COBYLA', options={'maxiter': maxiter, 'tol':optimizer_tol})
         runs.append(dict(restart=restart, energie_initiala=initial_energy,
                          energie_finala=run_energy, unghiuri_initiale=initial_angles.tolist(),
                          unghiuri_optime=run_angles.tolist(), evaluari=run_evaluations,
@@ -382,7 +396,7 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
     bound = circuit.assign_parameters(dict(zip(parameters, map(float, best_angles))))
     probabilities = Statevector.from_instruction(bound).probabilities()
     sampling_started = perf_counter()
-    counts, resources = _sample_counts(bound, shots, seed, backend_mode)
+    counts, resources = _sample_counts(bound, shots, seed, backend_mode, optimization_level=transpilation_level)
     sampling_seconds = perf_counter()-sampling_started
     summary = _summarize_counts(counts, routes, budget, penalty, reference['valoare_optima'], shots)
     best = summary['best']
@@ -411,12 +425,13 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
         diferenta_valoare=reference['valoare_optima']-best['valoare_totala'] if best else None,
         cel_mai_frecvent_plan=summary['most_frequent'], top_planuri=summary['top'],
         counts=summary['counts'],
+        statevector_probabilities={format(k,f'0{n}b'):float(prob) for k,prob in enumerate(probabilities)} if return_probabilities else None,
         optimizare=dict(metoda='COBYLA', restart_selectat=best_run, rulari=runs, history=history),
         statistici=dict(numar_qubiti=n, qaoa_depth=p, shots=shots, maxiter=maxiter,
                         restarts=restarts, evaluari=evaluations,
                         timp_antrenare_secunde=float(training_seconds),
                         timp_masurare_secunde=float(sampling_seconds),
                         timp_total_secunde=float(perf_counter()-started), seed=seed,
-                        backend=backend_mode, antrenare='ideal_statevector',
+                        backend=backend_mode, antrenare='ideal_statevector', optimizer_tol=optimizer_tol,
                         simulare_zgomot='executata' if backend_mode == 'noisy' else 'omisa_mod_ideal',
                         **resources))

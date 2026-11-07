@@ -7,6 +7,7 @@ import textwrap
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 from railway_catalog import POSITIONS
+from analysis_views import probability_rows,score_rows,resource_rows,distribution_rows
 
 
 def report_figures(result):
@@ -34,10 +35,16 @@ def report_figures(result):
     for ax in list(axes)[len(plans):]: ax.axis('off')
     figures.append(('Schematic network - blue selected, red closed, orange degraded; ! simulated incident',fig))
     fig = Figure(figsize=(10,5),layout='constrained'); ax=fig.subplots()
-    for mode,sample in result['samples'].items():
-        rows=sorted(sample['distribution'],key=lambda r:-r['probability'])[:20]
-        ax.plot([r['bitstring'] or '(empty)' for r in rows],[r['probability'] for r in rows],marker='o',label=mode)
-    ax.set(xlabel='Measured key (decision 0 at right); top 20 per backend',ylabel='Probability')
+    by_mode={mode:{r['bitstring']:r['probability'] for r in sample['distribution']} for mode,sample in result['samples'].items()}
+    keys=set().union(*(values.keys() for values in by_mode.values()))
+    if len(keys)>32:
+        keys=sorted(keys,key=lambda k:-max(values.get(k,0) for values in by_mode.values()))[:32]
+    keys=sorted(keys); width=.8/len(by_mode)
+    for index,(mode,values) in enumerate(by_mode.items()):
+        ax.bar([i+(index-(len(by_mode)-1)/2)*width for i in range(len(keys))],
+               [values.get(k,0) for k in keys],width=width,label=mode)
+    ax.set_xticks(range(len(keys)),[k or '(empty)' for k in keys],fontsize=7)
+    ax.set(xlabel='Measured key (decision 0 at right); up to 32 shared states',ylabel='Probability')
     ax.tick_params(axis='x',rotation=90); ax.legend(); figures.append(('Measurement distribution',fig))
     fig=Figure(figsize=(10,4),layout='constrained'); ax=fig.subplots()
     history=result['quantum']['optimizare']['history']
@@ -48,6 +55,34 @@ def report_figures(result):
         ax.plot([r['evaluation'] for r in points],[r['energy'] for r in points],label=f'Restart {restart+1}')
     ax.set(xlabel='Objective evaluation',ylabel='Exact ideal expected energy'); ax.legend()
     figures.append(('QAOA convergence (ideal training)',fig))
+    fig=Figure(figsize=(10,7),layout='constrained'); axes=fig.subplots(2,2).flat
+    ax=axes[0]; rows=probability_rows(result)
+    ax.bar(range(len(rows)),[r['Feasible'] for r in rows],label='feasible')
+    ax.bar(range(len(rows)),[r['Infeasible'] for r in rows],bottom=[r['Feasible'] for r in rows],label='infeasible')
+    ax.set_xticks(range(len(rows)),[r['Source'] for r in rows],rotation=18,fontsize=7)
+    ax.set(ylabel='Probability',title='Exact probabilities vs shot estimates'); ax.legend(fontsize=7)
+    ax=axes[1]; rows=score_rows(result)
+    ax.bar(range(len(rows)),[r['Score'] or 0 for r in rows])
+    ax.set_xticks(range(len(rows)),[r['Method']+(' (unobserved)' if r['Score'] is None else '') for r in rows],rotation=18,fontsize=7)
+    ax.set(ylabel='True feasible score',title='Classical vs observed feasible samples')
+    for index,(key,title) in enumerate([('Compiled depth','Compiled depth'),('Two-qubit gates','Two-qubit gate count')],start=2):
+        ax=axes[index]; rows=resource_rows(result)
+        ax.bar([r['Backend'] for r in rows],[r[key] for r in rows]); ax.set_title(title)
+    figures.append(('Outcome probabilities, planning score and compiled circuit resources',fig))
+    if 'baseline_snapshot' in result:
+        fig=Figure(figsize=(10,5),layout='constrained'); ax=fig.subplots()
+        rows=distribution_rows(result['baseline_snapshot'],result)
+        keys=sorted({r['Original plan'] for r in rows})
+        if len(keys)>32:
+            maxima={k:max(r['Probability'] for r in rows if r['Original plan']==k) for k in keys}
+            keys=sorted(sorted(keys,key=lambda k:-maxima[k])[:32])
+        for index,name in enumerate(('baseline','disrupted')):
+            values={r['Original plan']:r['Probability'] for r in rows if r['Scenario']==name}
+            ax.bar([i+(index-.5)*.4 for i in range(len(keys))],[values.get(k,0) for k in keys],width=.4,label=name)
+        step=max(1,len(keys)//20)
+        ax.set_xticks(range(0,len(keys),step),keys[::step],rotation=90,fontsize=7)
+        ax.set(xlabel='Full original plan (up to 32 shared states); each optimum is scenario-local',ylabel='Measured probability')
+        ax.legend(); figures.append(('Before/after distributions in original decision order',fig))
     return figures
 
 
@@ -62,6 +97,21 @@ def report_text(result):
         f"Enumerated plans: {result['plan_count']}",
         f"Classical: score {c['valoare_totala']}, cost {c['cost_total']}, key {c['bitstring']}",
         f"QUBO minimum: energy {m['energie']:.3f}, score {m['valoare_totala']}, cost {m['cost_total']}, valid={m['valid']}"]
+    if 'experiment_id' in result:
+        lines += ['',f"Experiment ID: {result['experiment_id']}; Scenario ID: {result['scenario_id']}",
+            f"Classical reference: {result['reference_method']}; runtime {result['reference_seconds']:.6f} s",
+            f"Optimal feasible ties: {len(result['classical_optima'])}; model minimum ties: {len(result['qubo_minima'])}"]
+        for label,plans in [('Classical optimal plans',result['classical_optima']),('QUBO minimum plans',result['qubo_minima'])]:
+            lines += [label+' (up to 20; complete lists in snapshot):']
+            lines += [f"full bits {plan['full_bits']}, cost {plan['cost_total']}, score {plan['valoare_totala']}, energy {plan['energie']:.6f}, valid={plan['valid']}" for plan in plans[:20]]
+        lines += ['QUBO and Ising coefficients in ACTIVE decision order:',json.dumps(result['model']),
+                  'Exact ideal statevector statistics (not finite-shot estimates):',str(result['exact_ideal_statistics'])]
+        q=result['quantum']
+        lines += [f"Optimized gamma: {q.get('gamma',[])}",f"Optimized beta: {q.get('beta',[])}",
+            f"Exact initial expected energy: {q.get('energie_medie_initiala','not trained')}",
+            f"Exact final expected energy: {q.get('energie_medie','not trained')}",
+            'Training runs and optimizer status:']
+        lines += [str(run) for run in q['optimizare'].get('rulari',[])]
     if 'scenario' in result:
         state=result['scenario']
         lines += ['',f"Scenario minute: {state['time']}; blocked route IDs: {state['blocked_ids']}",
@@ -79,6 +129,10 @@ def report_text(result):
             lines += [label]+[f'{k}: {v}' for k,v in metrics.items()]
         lines += ['Baseline reproducibility metadata: '+str(result['baseline_metadata']),
                   'Do not interpret energy differences across changed models as direct improvements.']
+        if 'baseline_snapshot' in result:
+            before=result['baseline_snapshot']
+            lines += ['Baseline classical full plan: '+str(before['classical']['full_bits']),
+                      'Disrupted classical full plan: '+str(c['full_bits'])]
     for mode,s in result['samples'].items():
         lines += ['',mode.upper()+' LOCAL SIMULATION',f"Best feasible observed: {s['best_feasible']['bitstring'] if s['best_feasible'] else 'none'}",
                   f"Most frequent: {s['most_frequent']['bitstring']} (valid={s['most_frequent']['valid']})"]

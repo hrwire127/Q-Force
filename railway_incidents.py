@@ -154,7 +154,9 @@ def comparison(before,after):
                 'classical_cost':result['classical']['cost_total'],
                 'qubo_minimum_energy':result['qubo_minimum']['energie'],
                 'qaoa_expected_energy':s['expected_energy'],'p_feasible':s['p_feasible'],
+                'qaoa_exact_ideal_expected_energy':result.get('exact_ideal_statistics',{}).get('expected_energy'),
                 'p_optimal_for_own_scenario':s['p_optimal_feasible'],
                 'best_feasible_sample_score':s['best_feasible']['valoare_totala'] if s['best_feasible'] else None,
+                'best_feasible_sample_cost':s['best_feasible']['cost_total'] if s['best_feasible'] else None,
                 'connected_components':result['connectivity']['component_count']}
     return {'baseline':row(before),'disrupted':row(after)}
