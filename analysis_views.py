@@ -4,6 +4,33 @@ OUTCOME_CATEGORIES=['Optim fezabil','Fezabil suboptim','Nefezabil']
 OUTCOME_COLORS=['#3B82F6','#10B981','#EF4444']
 
 
+def plan_probability_histogram(result,backend='ideal',classical=False,limit=64):
+    """Empirical quantum samples vs the actual deterministic classical output.
+
+    Zero-height reference bins share original decision order. No classical shots
+    or arbitrary uniform sampling over tied solutions are invented.
+    """
+    sample=result['samples'][backend]
+    classical_plan=result['classical']
+    by_key={p.get('full_bitstring',p['bitstring']):p for p in sample['distribution']}
+    chosen_key=classical_plan.get('full_bitstring',classical_plan['bitstring'])
+    by_key.setdefault(chosen_key,classical_plan)
+    keys=list(by_key)
+    if limit is not None and len(keys)>limit:
+        keys=sorted(keys,key=lambda k:(-by_key[k].get('probability',0),k))[:limit]
+        if chosen_key not in keys: keys[-1]=chosen_key
+    rows=[]
+    for key in sorted(keys):
+        plan=by_key[key]
+        category=2 if not plan['valid'] else 0 if plan['valoare_totala']==classical_plan['valoare_totala'] else 1
+        rows.append({'Plan':key or '∅','Probabilitate':float(key==chosen_key) if classical else plan.get('probability',0.),
+                     'Categorie':OUTCOME_CATEGORIES[category],
+                     'Măsurări':None if classical else plan.get('count',0),
+                     'Cost':plan['cost_total'],'Scor':plan['valoare_totala'],'Energie':plan['energie'],
+                     'Rute':', '.join(map(str,plan['ids_rute'])) or 'Niciuna'})
+    return rows
+
+
 def outcome_histogram(result,backend='ideal',classical=False):
     """Disjoint outcome categories; classical counts are states, quantum counts are shots."""
     if classical:

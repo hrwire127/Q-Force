@@ -9,25 +9,31 @@ from railway_incidents import scenario,comparison
 from incident_ui import render_compact_map
 from reporting import pdf_report
 from simulation_history import save_snapshot,list_snapshots,load_snapshot,persist_session_history
-from analysis_views import outcome_histogram,OUTCOME_CATEGORIES,OUTCOME_COLORS
+from analysis_views import outcome_histogram,plan_probability_histogram,OUTCOME_CATEGORIES,OUTCOME_COLORS
 
 CATEGORIES=OUTCOME_CATEGORIES
 COLORS=OUTCOME_COLORS
+PDF_VIEW_VERSION='probability-samples-v1'
 
 
 def draw_histogram(result,backend='ideal',classical=False):
-    rows=outcome_histogram(result,backend,classical)
-    if not classical and not sum(row['Număr'] for row in rows):
-        st.info('Nu s-au executat măsurări cuantice: planul gol a fost calculat determinist.'); return
-    label='Număr planuri enumerate' if classical else 'Număr măsurări'
+    rows=plan_probability_histogram(result,backend,classical)
+    st.markdown('**Probability samples**')
     chart=alt.Chart(pd.DataFrame(rows)).mark_bar(cornerRadiusTopLeft=5,cornerRadiusTopRight=5).encode(
-        x=alt.X('Rezultat:N',sort=CATEGORIES,title=None,axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('Număr:Q',title=label),
-        color=alt.Color('Rezultat:N',scale=alt.Scale(domain=CATEGORIES,range=COLORS),legend=None),
-        tooltip=['Rezultat',alt.Tooltip('Număr:Q',format='.0f'),alt.Tooltip('Proporție:Q',format='.1%')]).properties(height=280)
+        x=alt.X('Plan:N',sort=sorted(r['Plan'] for r in rows),title='Plan în ordinea Qiskit (x0 la dreapta)',axis=alt.Axis(labelAngle=-90)),
+        y=alt.Y('Probabilitate:Q',title='Probabilitate',axis=alt.Axis(format='.0%'),
+                scale=alt.Scale(domain=[0,min(1,max(r['Probabilitate'] for r in rows)*1.15 or 1)])),
+        color=alt.Color('Categorie:N',scale=alt.Scale(domain=CATEGORIES,range=COLORS),legend=alt.Legend(title=None,orient='bottom')),
+        tooltip=['Plan','Categorie',alt.Tooltip('Probabilitate:Q',format='.2%'),'Măsurări','Rute','Cost','Scor','Energie']).properties(height=300)
     st.altair_chart(chart,width='stretch')
-    st.caption('Optim fezabil și fezabil suboptim sunt categorii separate. '+(
-        'Referința clasică enumeră fiecare plan o singură dată.' if classical else 'Barele provin din măsurările efective ale acestei simulări.'))
+    if classical:
+        st.caption('Clasic: distribuție deterministă, P=1 pentru planul exact ales. Enumerarea nu produce măsurări sau shots.')
+    elif not result['routes']:
+        st.caption('Plan gol determinist, P=1. Nu s-au executat circuitul sau măsurări cuantice.')
+    else:
+        st.caption('Cuantic: probabilitatea fiecărui plan = număr măsurări / total shots. Biții sunt reconstruiți în ordinea rutelor originale.')
+    if len(result['samples'][backend]['distribution'])>64:
+        st.caption('Sunt afișate cel mult 64 de planuri, fără renormalizarea probabilităților.')
 
 
 def render_plan(result,plan,key):
@@ -94,7 +100,7 @@ def render_history():
 def render_sabina(result):
     analysis=result.get('classical_analysis')
     if not analysis: return
-    with st.expander('De ce este optim acest plan? — analiza Sabina',expanded=True):
+    with st.expander('De ce este optim acest plan?',expanded=True):
         st.write(analysis['explanation']['rezumat'])
         st.write('Alternative fezabile')
         fields=('ids_rute','cost_total','punctaj_total','pierdere_punctaj','economie_cost')
@@ -160,7 +166,7 @@ def render_experiment(routes,budget,state=None):
     st.subheader('Export PDF')
     if st.button('Pregătește PDF-ul simulării'):
         with st.spinner('Generez PDF-ul din simularea afișată…'):
-            st.session_state.pdf_bundle=(payload,pdf_report(result,presentation_backend=backend),backend)
+            st.session_state.pdf_bundle=(payload,pdf_report(result,presentation_backend=backend),backend,PDF_VIEW_VERSION)
     bundle=st.session_state.get('pdf_bundle')
-    if bundle and bundle[0]==payload and len(bundle)>2 and bundle[2]==backend:
+    if bundle and bundle[0]==payload and len(bundle)>3 and bundle[2]==backend and bundle[3]==PDF_VIEW_VERSION:
         st.download_button('Descarcă PDF',bundle[1],'quantum_railways.pdf','application/pdf')

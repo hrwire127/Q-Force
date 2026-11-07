@@ -7,7 +7,7 @@ import textwrap
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 from railway_catalog import POSITIONS
-from analysis_views import probability_rows,score_rows,resource_rows,distribution_rows,outcome_histogram,OUTCOME_COLORS
+from analysis_views import probability_rows,score_rows,resource_rows,distribution_rows,outcome_histogram,plan_probability_histogram,OUTCOME_CATEGORIES,OUTCOME_COLORS
 
 
 def report_figures(result):
@@ -234,19 +234,22 @@ def presentation_pdf_report(result,backend='ideal'):
                 ax.annotate(city,(lon,lat),fontsize=8,xytext=(4,5),textcoords='offset points')
             if not displayed: ax.text(.5,.5,'Nicio conexiune în acest plan',ha='center',transform=ax.transAxes)
             ax.margins(.22); ax.axis('off')
-            hist=fig.add_subplot(grid[2]); rows=outcome_histogram(result,backend,classical)
-            if sum(r['Număr'] for r in rows):
-                bars=hist.bar([r['Rezultat'] for r in rows],[r['Număr'] for r in rows],color=OUTCOME_COLORS)
-                hist.bar_label(bars,padding=3)
-                hist.set_ylim(0,max(r['Număr'] for r in rows)*1.18)
-            else:
-                hist.text(.5,.5,'Plan gol determinist: fără circuit și fără măsurări QAOA.',ha='center',transform=hist.transAxes,wrap=True)
-            hist.set_ylabel('Planuri enumerate' if classical else 'Măsurări efective'); hist.tick_params(axis='x',labelsize=8)
+            hist=fig.add_subplot(grid[2]); rows=plan_probability_histogram(result,backend,classical)
+            palette=dict(zip(OUTCOME_CATEGORIES,OUTCOME_COLORS))
+            hist.bar(range(len(rows)),[r['Probabilitate'] for r in rows],color=[palette[r['Categorie']] for r in rows])
+            step=max(1,len(rows)//32)
+            hist.set_xticks(range(0,len(rows),step),[r['Plan'] for r in rows][::step],rotation=90,fontsize=6)
+            hist.set_ylim(0,min(1,max(r['Probabilitate'] for r in rows)*1.18 or 1))
+            from matplotlib.ticker import PercentFormatter
+            hist.yaxis.set_major_formatter(PercentFormatter(1))
+            hist.set_ylabel('Probabilitate'); hist.set_title('Probability samples',fontsize=10)
             foot=fig.add_subplot(grid[3]); foot.axis('off')
-            foot.text(0,.8,'Conexiuni fictive schematice la coordonate geografice reale.\nOptimele fezabile sunt separate de planurile fezabile suboptime.',fontsize=8,va='top')
+            source='Clasic determinist: P=1 pentru planul exact ales; fără shots.' if classical else 'Cuantic: frecvențe măsurate / total shots.' if result['routes'] else 'Plan gol determinist: P=1; fără circuit sau shots.'
+            note='\nMaxim 64 de planuri afișate, fără renormalizare.' if len(result['samples'][backend]['distribution'])>64 else ''
+            foot.text(0,.8,source+'\nAlbastru: optim fezabil; verde: fezabil suboptim; roșu: nefezabil.\nConexiuni fictive schematice la coordonate geografice reale.'+note,fontsize=8,va='top')
             pdf.savefig(fig)
         explanation=result.get('classical_analysis',{}).get('explanation',{}).get('rezumat','')
-        lines=['De ce este optim acest plan? - analiza Sabina','',explanation,'',
+        lines=['De ce este optim acest plan?','',explanation,'',
                'Interpretare: scorul fezabil și energia QUBO au semnificații diferite.',
                'E(x) = -scor(x) + penalizare * (cost(x) - buget)^2.',
                'Modelul penalizează și cheltuirea sub buget. Un minim de energie poate depăși bugetul.',

@@ -9,6 +9,7 @@ from incident_ui import geographic_figure,visible_map_state
 from railway_data import ROUTES,DEMO_IDS
 from simulation_history import save_snapshot,load_snapshot,list_snapshots
 from reporting import pdf_report
+from analysis_views import plan_probability_histogram
 
 BASE=[r for r in ROUTES if r['id'] in DEMO_IDS]
 
@@ -39,6 +40,23 @@ def test_local_history_is_immutable_and_survives_new_connection():
     assert load_snapshot(key)['classical']['valoare_totala']==15
 
 
+def test_probability_samples_are_actual_frequencies_and_deterministic_classical():
+    result=run_experiment(BASE,shots=128,maxiter=8,mode='compare')
+    frozen=json.dumps(result,sort_keys=True)
+    for mode in ('ideal','noisy'):
+        rows=plan_probability_histogram(result,mode)
+        counts={p['full_bitstring']:p['count'] for p in result['samples'][mode]['distribution']}
+        assert np.isclose(sum(r['Probabilitate'] for r in rows),1)
+        for row in rows:
+            assert np.isclose(row['Probabilitate'],counts.get(row['Plan'],0)/128)
+        classical=plan_probability_histogram(result,mode,classical=True)
+        positive=[r for r in classical if r['Probabilitate']]
+        assert len(positive)==1 and positive[0]['Probabilitate']==1
+        assert positive[0]['Plan']==result['classical']['full_bitstring']
+        assert all(r['Măsurări'] is None for r in classical)
+    assert json.dumps(result,sort_keys=True)==frozen
+
+
 def test_focused_pdf_uses_requested_backend_and_frozen_data():
     result=run_experiment(BASE,shots=128,maxiter=8,mode='compare')
     original=json.dumps(result,sort_keys=True)
@@ -59,6 +77,8 @@ def test_presentation_order_regeneration_and_load_previous_runs(monkeypatch):
         next(b for b in app.button if b.label==label).click().run()
         assert not app.exception,app.exception
     click(app,'Rulează simularea')
+    assert any(e.label=='De ce este optim acest plan?' for e in app.expander)
+    assert not any('analiza Sabina' in e.label for e in app.expander)
     baseline=json.loads(app.session_state['experiment_json'])
     labels=[s.value for s in app.subheader]
     assert labels.index('Rezultatul cuantic — cel mai bun plan fezabil găsit')<labels.index('Rezultatul prin formula clasică')
@@ -86,3 +106,4 @@ def test_presentation_order_regeneration_and_load_previous_runs(monkeypatch):
     assert reopened.toggle(key='simulate_incidents').value is True
     click(reopened,'Pregătește PDF-ul simulării')
     assert reopened.session_state['pdf_bundle'][1].startswith(b'%PDF')
+    assert reopened.session_state['pdf_bundle'][3]=='probability-samples-v1'

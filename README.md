@@ -33,7 +33,7 @@ cd C:\Users\artio\Desktop\Hackaton\Quantum-Railways-Sequential
 4. Click **Rulează simularea**. The best feasible observed quantum plan is shown
    first, with its selected connections, score, energy, cost and outcome histogram.
 5. The classical result follows with the same fields, its own solution map and
-   enumeration histogram. **De ce este optim acest plan? — analiza Sabina** remains.
+   probability histogram. **De ce este optim acest plan?** keeps the explanation.
 6. **Simulări salvate / Încarcă simularea** restores a saved run without retraining.
    Before/After can compare any two saved runs. **Pregătește PDF-ul simulării**
    exports the displayed frozen result. The HTML export API remains available.
@@ -55,9 +55,13 @@ or an explicit history load restores the original settings.
 
 The presentation view shows only checked connections on its configuration map,
 and only the actually selected solution connections on each result map. Each map
-contains only cities at those connections' endpoints. Histograms use disjoint
-categories: optimal feasible, feasible suboptimal, and infeasible. Quantum bars
-count actual measurement shots; classical bars count enumerated plans, not shots.
+contains only cities at those connections' endpoints. **Probability samples**
+histograms show one bar per plan, colored as optimal feasible, feasible suboptimal
+or infeasible. Quantum probabilities are actual counts divided by shots. The
+classical algorithm is deterministic: its chosen exact plan has P=1, with no
+invented classical samples or uniform random choice among optimal ties. The x-axis
+uses full original Qiskit-order bitstrings (x0 on the right). Up to 64 states are
+displayed without renormalizing probabilities. PDF charts use the same data.
 
 ## Architecture and contracts
 
