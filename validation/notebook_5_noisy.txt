@@ -1,0 +1,66 @@
+Executing cell 2
+Local notebook | Python 3.12.14
+qiskit 2.1.0
+qiskit-aer 0.17.0
+numpy 2.2.6
+scipy 1.15.3
+networkx 3.5
+matplotlib 3.10.3
+Import and statevector smoke test passed.
+Executing cell 4
+Numar orase: 14
+Numar rute nationale: 13
+Numar rute internationale: 6
+Numar total rute: 19
+Numar qubiti logici: 19
+Combinatii posibile: 524288
+Buget: 7
+Executing cell 5
+Executing cell 6
+Executing cell 8
+notebook_cell_6:1: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Our hand-selected plan: [1, 1, 1, 0, 0] cost 7 value 15 feasible True
+Executing cell 10
+Executing cell 12
+Exact reference states: 32
+Penalty: 0.7 route IDs: [0, 2, 6] cost: 8 value: 18 energy: -17.3 feasible: False
+Penalty: 4.0 route IDs: [0, 1, 2] cost: 7 value: 15 energy: -15.0 feasible: True
+Executing cell 14
+Direct and QUBO energies agree on all 32 plans.
+Executing cell 16
+Direct, QUBO and Ising energies agree on all 32 states.
+Executing cell 18
+QAOA parameters: ['theta[0]', 'theta[1]']
+Executing cell 20
+Initial probability of each plan: 0.031249999999999976
+Executing cell 21
+Initial uniform expected energy: -6.7499999999999964
+Executing cell 22
+Training: 5 qubits; 1 restart(s); maxiter= 30
+Initial expected energy: -6.7499999999999964
+Optimised expected energy: -13.30228529264285
+Evaluations: 30  | local training seconds: 0.069
+Optimiser success: False | status: Maximum number of function evaluations has been exceeded.
+Executing cell 24
+notebook_cell_24:14: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+notebook_cell_24:18: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Executing cell 27
+Executing cell 28
+Executing cell 29
+Final logical-to-physical mapping: [0, 1, 4, 2, 3]
+Executing cell 30
+Local noisy samples: 1024
+Executing cell 32
+Executing cell 33
+Real QPU execution skipped; the core uses local results above.
+Executing cell 35
+notebook_cell_35:16: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Executing cell 38
+Executing cell 39
+Additional extension training omitted: RUN_EXTENSION=False.
+Executing cell 43
+Executing cell 44
+Executing cell 46
+Executing cell 47
+Executing cell 49
+FULL NOTEBOOK CHECK OK: 5 qubits; best sample: {'bits': [1, 1, 1, 0, 0], 'key': '00111', 'route_ids': [0, 1, 2], 'cost': 7, 'score': 15, 'feasible': True, 'energy': -15.0} noisy: True
