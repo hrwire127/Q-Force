@@ -56,8 +56,8 @@ def test_complete_streamlit_workflow():
     assert not app.exception
     result=json.loads(app.session_state['experiment_json'])
     assert result['classical']['valoare_totala']==15
-    next(b for b in app.button if b.label=='Pregătește rapoartele HTML și PDF').click().run()
-    assert not app.exception and app.session_state['report_bundle'][2].startswith(b'%PDF')
+    next(b for b in app.button if b.label=='Pregătește PDF-ul simulării').click().run()
+    assert not app.exception and app.session_state['pdf_bundle'][1].startswith(b'%PDF')
     app.slider(key='budget').set_value(6).run()
     assert not app.exception
     assert any('Configurația s-a schimbat' in i.value for i in app.info)

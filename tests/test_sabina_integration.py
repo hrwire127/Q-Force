@@ -63,9 +63,8 @@ def test_sabina_analysis_is_accessible_in_existing_ui_and_exports():
     result=json.loads(app.session_state['experiment_json'])
     assert any('Niciun plan valid' in item.value for item in app.markdown)
     assert 'classical_analysis' in result
-    next(b for b in app.button if b.label=='Pregătește rapoartele HTML și PDF').click().run()
+    next(b for b in app.button if b.label=='Pregătește PDF-ul simulării').click().run()
     assert not app.exception,app.exception
-    bundle=app.session_state['report_bundle']
+    bundle=app.session_state['pdf_bundle']
     assert bundle[0]==app.session_state['experiment_json']
-    assert 'SABINA CLASSICAL ANALYSIS' in bundle[1]
-    assert bundle[2].startswith(b'%PDF')
+    assert bundle[1].startswith(b'%PDF')

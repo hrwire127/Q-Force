@@ -93,7 +93,7 @@ def test_streamlit_parameters_map_switch_and_matching_exports():
     app=AppTest.from_file(Path(__file__).resolve().parents[1]/'app.py',default_timeout=60).run()
     assert not app.exception
     next(s for s in app.slider if s.label=='Adâncime QAOA p').set_value(2).run()
-    next(s for s in app.slider if s.label=='Nivel optimizare transpiler').set_value(0).run()
+    assert not any(s.label=='Nivel optimizare transpiler' for s in app.slider)
     next(s for s in app.selectbox if s.label=='Backend').select('compare').run()
     next(b for b in app.button if b.label=='Rulează simularea').click().run()
     assert not app.exception
@@ -101,20 +101,19 @@ def test_streamlit_parameters_map_switch_and_matching_exports():
     baseline=json.loads(before)
     assert baseline['config']['p']==2 and baseline['config']['mode']=='compare'
     assert sum(baseline['counts_by_backend']['noisy'].values())==2048
-    next(s for s in app.selectbox if s.label=='Plan pe hartă').select('Minim QUBO').run()
+    next(s for s in app.selectbox if s.label=='Varianta cuantică').select('noisy').run()
     assert not app.exception and app.session_state['experiment_json']==before
-    app.selectbox(key='incident_route').select(1).run()
-    next(b for b in app.button if b.label=='Blochează conexiunea').click().run()
+    app.toggle(key='simulate_incidents').set_value(True).run()
+    app.session_state['qr_incidents']=[asdict(Incident('closed-x1',1))]
+    app.run()
     next(b for b in app.button if b.label=='Rulează simularea').click().run()
     assert not app.exception
     after=json.loads(app.session_state['experiment_json'])
     assert after['classical']['full_bits']==[0,0,1,1,0]
     assert after['baseline_snapshot']['experiment_id']==baseline['experiment_id']
     assert after['model']['qubo']['linear']!=baseline['model']['qubo']['linear']
-    next(b for b in app.button if b.label=='Pregătește rapoartele HTML și PDF').click().run()
+    next(b for b in app.button if b.label=='Pregătește PDF-ul simulării').click().run()
     assert not app.exception
-    bundle=app.session_state['report_bundle']
+    bundle=app.session_state['pdf_bundle']
     assert bundle[0]==app.session_state['experiment_json']
-    assert after['experiment_id'] in bundle[1] and 'Exact ideal statevector' in bundle[1]
-    assert 'Optimized gamma' in bundle[1] and 'NOISY LOCAL SIMULATION' in bundle[1]
-    assert bundle[2].startswith(b'%PDF')
+    assert bundle[1].startswith(b'%PDF')

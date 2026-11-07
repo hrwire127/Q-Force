@@ -7,7 +7,7 @@ import textwrap
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 from railway_catalog import POSITIONS
-from analysis_views import probability_rows,score_rows,resource_rows,distribution_rows
+from analysis_views import probability_rows,score_rows,resource_rows,distribution_rows,outcome_histogram,OUTCOME_COLORS
 
 
 def report_figures(result):
@@ -19,7 +19,8 @@ def report_figures(result):
     axes = list(fig.subplots(2,2).flat)
     for ax,(title,plan) in zip(axes,plans):
         ids = set(plan['ids_rute']) if plan else set()
-        for route in network:
+        displayed_network=[r for r in network if r['id'] in ids]
+        for route in displayed_network:
             points = [POSITIONS[city] for city in route['cities']]
             selected = route['id'] in ids
             color='#EF4444' if route.get('status')=='blocked' else '#3B82F6' if selected else '#F59E0B' if route.get('status')=='degraded' else '#cbd5e1'
@@ -27,7 +28,9 @@ def report_figures(result):
                     linestyle='--' if route.get('status')=='blocked' else '-')
             if route.get('incident_ids'):
                 ax.annotate('!',tuple(sum(p[i] for p in points)/2 for i in (0,1)),color='#EF4444',weight='bold')
-        cities = {c for r in network for c in r['cities']}
+        cities = {c for r in displayed_network for c in r['cities']}
+        if not displayed_network:
+            ax.text(.5,.5,'No selected connections',ha='center',transform=ax.transAxes)
         for city in cities:
             lon,lat = POSITIONS[city]; ax.scatter(lon,lat,s=12,c='#17334a'); ax.annotate(city,(lon,lat),fontsize=7)
         ax.set_title(title + (f"\nCost {plan['cost_total']}, score {plan['valoare_totala']}, energy {plan['energie']:.2f}, valid={plan['valid']}" if plan else '\nNo feasible sample'),fontsize=9)
@@ -184,7 +187,9 @@ def html_report(result):
     return '<!doctype html><html><meta charset="utf-8"><title>Quantum Railways report</title><style>body{font:15px system-ui;max-width:1000px;margin:32px auto}pre{white-space:pre-wrap}td,th{padding:8px;border:1px solid #ccc}table{border-collapse:collapse}</style><body><pre>'+escape('\n'.join(report_text(result)))+'</pre>'+table+'</table>'+''.join(pictures)+'</body></html>'
 
 
-def pdf_report(result):
+def pdf_report(result,presentation_backend=None):
+    if presentation_backend is not None:
+        return presentation_pdf_report(result,presentation_backend)
     buf=BytesIO()
     text=report_text(result)+['','Route catalogue:']+[
         f"x{i}: ID {r['id']} {' - '.join(r['cities'])}, cost {r['cost']}, score {r['value']}" for i,r in enumerate(result['routes'])]
@@ -197,3 +202,68 @@ def pdf_report(result):
         for title,fig in report_figures(result):
             fig.suptitle(title,fontsize=12); pdf.savefig(fig)
     return buf.getvalue()
+
+
+def presentation_pdf_report(result,backend='ideal'):
+    """Match the focused page and chosen backend without mutating its snapshot."""
+    if backend not in result['samples']: raise ValueError('Backend absent from this snapshot.')
+    buffer=BytesIO()
+    network={r['id']:r for r in result['scenario']['routes']}
+    with PdfPages(buffer) as pdf:
+        for classical in (False,True):
+            plan=result['classical'] if classical else result['samples'][backend]['best_feasible']
+            title='Rezultatul prin formula clasică' if classical else 'Rezultatul cuantic - '+backend
+            fig=Figure(figsize=(8.27,11.69))
+            grid=fig.add_gridspec(4,1,height_ratios=[1.7,3.4,2.3,.65],left=.09,right=.94,top=.95,bottom=.06,hspace=.3)
+            head=fig.add_subplot(grid[0]); head.axis('off')
+            text=[title,'Quantum Railways | '+result['created_utc'][:19].replace('T',' ')+' UTC']
+            if plan:
+                text += [f"Scor {plan['valoare_totala']}    Energie {plan['energie']:.3f}    Cost {plan['cost_total']}    Buget {result['config']['budget']}"]
+                names=[' - '.join(network[rid]['cities']) for rid in plan['ids_rute']]
+                text += ['Conexiuni: '+('; '.join(names) if names else 'Nicio conexiune selectată.')]
+            else:
+                text += ['Niciun plan fezabil nu a fost observat; nu este substituit cu soluția clasică.']
+            wrapped=[line for p in text for line in textwrap.wrap(p,90)]
+            head.text(0,1,'\n'.join(wrapped),va='top',fontsize=10,linespacing=1.45)
+            ax=fig.add_subplot(grid[1]); chosen=set(plan['ids_rute']) if plan else set()
+            displayed=[r for rid,r in network.items() if rid in chosen]
+            for route in displayed:
+                ax.plot(*zip(*(POSITIONS[c] for c in route['cities'])),color='#3B82F6',lw=3)
+            for city in sorted({c for r in displayed for c in r['cities']}):
+                lon,lat=POSITIONS[city]; ax.scatter(lon,lat,s=25,color='#17334a')
+                ax.annotate(city,(lon,lat),fontsize=8,xytext=(4,5),textcoords='offset points')
+            if not displayed: ax.text(.5,.5,'Nicio conexiune în acest plan',ha='center',transform=ax.transAxes)
+            ax.margins(.22); ax.axis('off')
+            hist=fig.add_subplot(grid[2]); rows=outcome_histogram(result,backend,classical)
+            if sum(r['Număr'] for r in rows):
+                bars=hist.bar([r['Rezultat'] for r in rows],[r['Număr'] for r in rows],color=OUTCOME_COLORS)
+                hist.bar_label(bars,padding=3)
+                hist.set_ylim(0,max(r['Număr'] for r in rows)*1.18)
+            else:
+                hist.text(.5,.5,'Plan gol determinist: fără circuit și fără măsurări QAOA.',ha='center',transform=hist.transAxes,wrap=True)
+            hist.set_ylabel('Planuri enumerate' if classical else 'Măsurări efective'); hist.tick_params(axis='x',labelsize=8)
+            foot=fig.add_subplot(grid[3]); foot.axis('off')
+            foot.text(0,.8,'Conexiuni fictive schematice la coordonate geografice reale.\nOptimele fezabile sunt separate de planurile fezabile suboptime.',fontsize=8,va='top')
+            pdf.savefig(fig)
+        explanation=result.get('classical_analysis',{}).get('explanation',{}).get('rezumat','')
+        lines=['De ce este optim acest plan? - analiza Sabina','',explanation,'',
+               'Interpretare: scorul fezabil și energia QUBO au semnificații diferite.',
+               'E(x) = -scor(x) + penalizare * (cost(x) - buget)^2.',
+               'Modelul penalizează și cheltuirea sub buget. Un minim de energie poate depăși bugetul.',
+               'QAOA alege cel mai bun plan fezabil observat în măsurări; enumerarea clasică verifică toate planurile.','',
+               'Configurația și reproducibilitatea experimentului:']
+        lines += [f'{key}: {value}' for key,value in result['config'].items()]
+        lines += ['', 'Incidente simulate: '+str(result['scenario']['blocked_ids']),
+                  'Experiment: '+result.get('experiment_id',''), 'Backend afișat: '+backend,
+                  'Durata experimentului (secunde): '+str(result['runtime_seconds']),
+                  'Software: '+str(result['versions'])]
+        if 'baseline_comparison' in result:
+            lines += ['', 'Before / After:']
+            for name,data in result['baseline_comparison'].items():
+                lines.append(f"{name}: scor clasic {data['classical_score']}, cost {data['classical_cost']}, scor QAOA {data['best_feasible_sample_score']}")
+        wrapped=[line for p in lines for line in (textwrap.wrap(p,94) or [''])]
+        for offset in range(0,len(wrapped),46):
+            fig=Figure(figsize=(8.27,11.69)); ax=fig.subplots(); ax.axis('off')
+            ax.text(0,1,'\n'.join(wrapped[offset:offset+46]),va='top',fontsize=9,linespacing=1.5)
+            pdf.savefig(fig)
+    return buffer.getvalue()

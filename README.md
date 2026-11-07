@@ -24,21 +24,40 @@ cd C:\Users\artio\Desktop\Hackaton\Quantum-Railways-Sequential
 
 ## Workflow
 
-1. Select eligible routes using the existing sidebar search/checkboxes.
-2. Set the budget and QAOA parameters, then click **Rulează simularea**.
-3. Compare exact feasible score, QUBO minimum and sampled QAOA plans.
-4. Switch the plan on the interactive map. Inspect distribution, convergence,
-   probabilities, true scores, costs, energies and circuit resources.
-5. Click **Pregătește rapoartele HTML și PDF** and download either report.
-6. Use **Live Network** in the sidebar for incidents, replay, timeline,
-   before/after comparison and map/CSV exports. This page models synthetic
-   operations separately from quantum optimization. Its archived baseline
-   insights are explicitly labeled; compatible current QAOA recommendations
-   can be applied to the internal network.
+1. Set the budget, check routes in the sidebar and review the selected connection
+   list and route/city counts at the top.
+2. Optionally enable **Simulează un incident** and use **Regenerează locul
+   incidentului**. Only its location changes; the connection is unavailable.
+3. Set penalty and shots. Depth, optimizer evaluations, restarts and backend are
+   available under **Setări QAOA**. Seed, tolerance and transpiler level are internal.
+4. Click **Rulează simularea**. The best feasible observed quantum plan is shown
+   first, with its selected connections, score, energy, cost and outcome histogram.
+5. The classical result follows with the same fields, its own solution map and
+   enumeration histogram. **De ce este optim acest plan? — analiza Sabina** remains.
+6. **Simulări salvate / Încarcă simularea** restores a saved run without retraining.
+   Before/After can compare any two saved runs. **Pregătește PDF-ul simulării**
+   exports the displayed frozen result. The HTML export API remains available.
 
-Completed experiment results are stored as a JSON snapshot. Changing any
-configuration hides the old result until rerun. Exports use the displayed
-snapshot, independent of subsequent widget reruns.
+The PDF action follows the presentation page: quantum result for the selected
+backend, classical result, matching selected-edge maps and disjoint histograms,
+then Sabina's explanation and reproducibility metadata. Changing the displayed
+backend hides a PDF generated for another backend until it is regenerated.
+`pdf_report(result, presentation_backend='ideal')` generates this compact version;
+`pdf_report(result)` keeps the full technical report API for programmatic use.
+
+Completed experiments are immutable JSON snapshots persisted in local SQLite at
+`output/simulation_history.sqlite3` (gitignored). Existing session snapshots are
+migrated when available; previously lost browser sessions cannot be recovered.
+History survives refreshes and app restarts. Override the local path with optional
+`QUANTUM_RAILWAYS_HISTORY_DB`. Automated tests use isolated databases and never
+write to the user's history. Changing settings hides stale results until rerun
+or an explicit history load restores the original settings.
+
+The presentation view shows only checked connections on its configuration map,
+and only the actually selected solution connections on each result map. Each map
+contains only cities at those connections' endpoints. Histograms use disjoint
+categories: optimal feasible, feasible suboptimal, and infeasible. Quantum bars
+count actual measurement shots; classical bars count enumerated plans, not shots.
 
 ## Architecture and contracts
 
@@ -57,6 +76,8 @@ snapshot, independent of subsequent widget reruns.
 - `classical_bridge.py`: adapter from shared routes to Sabina's API; preserves
   stable physical IDs and keeps hard incident closures outside the search space.
 - `experiment_ui.py`: experiment controls, comparison, map and exports.
+- `simulation_history.py`: local, append-only compressed snapshots, history
+  selection and safe restoration of controls before Streamlit creates widgets.
 - `reporting.py`: matching HTML/PDF text, maps and charts using Matplotlib.
 - `analysis_qaoa/`, `README_QAOA.md`, `QAOA_VALIDATION.md`: preserved historical
   analysis and API documentation. Historical reports are not current results.
@@ -115,8 +136,9 @@ provides fullscreen. Click city markers, connection points, or incident markers
 to populate a linked details panel. City coordinates are real; all optimization
 connections, construction costs, scores and incidents are fictional. There is no
 real railway-track geometry layer, and straight segments never claim to be real
-tracks. Online tiles require internet; the toggle offers an explicitly schematic
-offline view. Reports use static schematic maps and never download basemap tiles.
+tracks. Online tiles require internet; the underlying map helper also supports
+schematic offline rendering. Reports use static schematic maps showing selected
+solution connections and never download basemap tiles.
 
 Attribution: [OpenStreetMap contributors](https://www.openstreetmap.org/copyright)
 and [CARTO](https://carto.com/attribution/). See the official
@@ -143,11 +165,12 @@ Effects are explicit:
   and reports consistently. Concurrent surcharges/delays add; capacity uses the
   lowest remaining percentage. Severity itself never implies hidden numerical effects.
 
-The incident panel supports create, edit, resolve, remove, block/unblock, reset,
-and reproducible random scenarios. Random generation replaces the incident list
-intentionally; resetting incidents preserves saved experiments. Incidents for
-temporarily deselected routes stay in session state but do not affect the current
-selected network. Active incidents and availability update on each rerun.
+The presentation incident panel now has only an enable toggle and a regenerate
+button. It chooses one checked connection as a simulated closure, with no manual
+seed or extra incident parameters. Regeneration chooses a different connection
+when more than one is available. Disabling the toggle restores availability.
+The richer validated incident API remains supported for saved experiments and
+programmatic scenarios. Incident changes never overwrite older result snapshots.
 
 Graph analysis retains cities as isolated nodes when every adjacent connection is
 closed. Reachability and alternative paths use only available edges. Displayed
@@ -161,10 +184,8 @@ is evaluated deterministically and no zero-qubit circuit or shots are executed.
 
 ### Before/after workflow
 
-1. Select the default five routes and run **Rulează simularea**, or explicitly
-   **Rulează baseline fără incidente**. The baseline snapshot is saved separately.
-2. Select `#1 Iași — Cluj-Napoca` under **Conexiune afectată** and click
-   **Blochează conexiunea**. Red overrides selected-blue when a conflict exists.
+1. Select the default five routes and run **Rulează simularea** with incidents off.
+2. Enable **Simulează un incident** and optionally regenerate its location.
 3. Run **Rulează simularea** again. Both algorithms use the four available
    decisions. Compare available routes, feasible plans, exact scores/costs,
    QUBO energy, QAOA probabilities and connected components in Before / After.
@@ -173,12 +194,12 @@ is evaluated deterministically and no zero-qubit circuit or shots are executed.
    differences across changed decision spaces are not interpreted as advantages.
 5. Generate/download HTML and PDF reports. They freeze incident records, blocked
    IDs, decision mapping, statistics and baseline comparison at execution time.
-6. **Deblochează conexiunea** or reset incidents, then rerun to restore baseline.
-   Earlier runs remain available via the archived snapshot selector, map and exports.
+6. Disable **Simulează un incident** and rerun to restore the original scenario,
+   or load any prior simulation using **Încarcă simularea**. Earlier runs remain
+   available from persistent history and can be compared and exported.
 
-Session persistence lasts for the current Streamlit session (refresh/new browser
-sessions can reset it). Snapshots are kept in memory, not a database. Simulations
-are synchronous with visible running/completed/failed states and bounded resources.
+Snapshots now persist beyond the Streamlit session in the local SQLite database.
+Simulations are synchronous with visible running/completed/failed states and bounded resources.
 The legacy Live Network page and its synthetic timeline remain available; the main
 page's incident experiment controls are the ones that rebuild the optimization model.
 
@@ -233,7 +254,8 @@ The result contains:
 - Reconstructed full original plans for optima, sampled plans, quantum
   recommendations and the DP reference. Blocked positions remain zero.
 
-UI controls include COBYLA tolerance and transpilation optimization level 0-3.
+Backend configuration supports COBYLA tolerance and transpilation level 0-3;
+these are internal settings in the presentation UI, together with the seed.
 Both ideal and noisy sampling use the chosen level and seeded transpiler.
 COBYLA requires at least `2*p+2` evaluations; the UI enforces that minimum and the
 pipeline rejects smaller budgets rather than allowing SciPy to increase them
@@ -243,7 +265,8 @@ Outcome charts show feasible/infeasible probabilities, exact versus finite-shot
 probabilities, classical versus sampled feasible score, convergence, distributions
 and compiled circuit resources. Before/after distributions align **full original
 bitstrings**, not reduced measurement keys. Each scenario's optimal probability
-uses its own reference. Side-by-side geographic overlays are optional controls.
+uses its own reference. The presentation Before/After table compares saved runs;
+loading either run restores its complete scenario and displayed solution maps.
 
 HTML/PDF exports include model coefficients, tie counts and up to 20 listed tied
 plans (complete lists remain in the snapshot), training settings/status/angles,

@@ -1,5 +1,24 @@
 """Presentation tables derived from frozen results; no new optimizations."""
 
+OUTCOME_CATEGORIES=['Optim fezabil','Fezabil suboptim','Nefezabil']
+OUTCOME_COLORS=['#3B82F6','#10B981','#EF4444']
+
+
+def outcome_histogram(result,backend='ideal',classical=False):
+    """Disjoint outcome categories; classical counts are states, quantum counts are shots."""
+    if classical:
+        optimal=len(result['classical_optima'])
+        valid=result['feasible_plan_count']
+        counts=[optimal,valid-optimal,result['plan_count']-valid]
+    else:
+        counts=[0,0,0]
+        for plan in result['samples'][backend]['distribution']:
+            category=2 if not plan['valid'] else 0 if plan['valoare_totala']==result['classical']['valoare_totala'] else 1
+            counts[category]+=plan['count']
+    total=sum(counts)
+    return [{'Rezultat':name,'Număr':count,'Proporție':count/total if total else 0}
+            for name,count in zip(OUTCOME_CATEGORIES,counts)]
+
 
 def probability_rows(result):
     rows=[{'Source':mode+' finite-shot estimate','Feasible':s['p_feasible'],

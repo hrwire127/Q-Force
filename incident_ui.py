@@ -43,7 +43,7 @@ def geographic_figure(state, selected_ids=(), *, online=True, all_routes=None):
             marker={'size':16,'color':STATUS_COLORS[r['status']]},text=['!'],textfont={'color':'white'},
             name='Simulated incident',showlegend=False,customdata=[['route',r['id']]],
             hovertemplate=f"Simulated: {escape(TYPES[inc['incident_type']])}<br>{inc['severity']}<br>{escape(inc['description'])}<extra></extra>"))
-    cities=list(POSITIONS)
+    cities=sorted({city for route in routes.values() for city in route['cities']})
     fig.add_trace(go.Scattermap(lon=[POSITIONS[c][0] for c in cities],lat=[POSITIONS[c][1] for c in cities],
         mode='markers+text',text=cities,textposition='top center',marker={'size':11,'color':'#172554'},
         textfont={'color':'#172554'},customdata=[['city',c] for c in cities],name='Cities',
@@ -53,6 +53,70 @@ def geographic_figure(state, selected_ids=(), *, online=True, all_routes=None):
                       uirevision='incident-geography',clickmode='event+select',height=610,
                       margin={'l':0,'r':0,'t':0,'b':0},legend={'orientation':'h'})
     return fig
+
+
+def regenerate_incident(routes):
+    """Regenerate only the location, keeping incident effects and solver settings fixed."""
+    from random import Random
+    revision=st.session_state.get('simple_incident_revision',0)+1
+    previous={i['route_id'] for i in st.session_state.get('qr_incidents',[])}
+    candidates=[r for r in routes if r['id'] not in previous] or routes
+    if not candidates:
+        st.session_state.qr_incidents=[]; return
+    route=Random(2026+revision).choice(candidates)
+    st.session_state.simple_incident_revision=revision
+    st.session_state.qr_incidents=[asdict(Incident(f'SIM-{revision}',route['id'],description='Închidere simulată - loc regenerat'))]
+    st.session_state.scenario_time_internal=0
+
+
+def toggle_simple_incidents(routes):
+    if st.session_state.simulate_incidents:
+        regenerate_incident(routes)
+    else:
+        st.session_state.qr_incidents=[]
+
+
+def render_simple_incidents(routes):
+    st.subheader('Simulare incidente')
+    st.session_state.setdefault('qr_incidents',[])
+    st.toggle('Simulează un incident',key='simulate_incidents',disabled=not routes,
+              on_change=toggle_simple_incidents,args=(routes,))
+    if st.session_state.get('simulate_incidents'):
+        if st.button('Regenerează locul incidentului',disabled=not routes):
+            regenerate_incident(routes); st.rerun()
+    route_ids={r['id'] for r in routes}
+    incidents=[i for i in st.session_state.qr_incidents if i['route_id'] in route_ids]
+    current=scenario(routes,incidents,st.session_state.get('scenario_time_internal',0))
+    by_id={r['id']:r for r in routes}
+    for rid in current['blocked_ids']:
+        st.warning('Incident simulat: '+ ' — '.join(by_id[rid]['cities'])+' · conexiune indisponibilă.')
+    if not current['active_incidents']:
+        st.caption('Rețeaua selectată nu are incidente active.')
+    return current
+
+
+def visible_map_state(state,selected_ids=None,plan_only=False):
+    from copy import deepcopy
+    displayed=deepcopy(state)
+    if plan_only:
+        chosen=set(selected_ids or ())
+        displayed['routes']=[r for r in displayed['routes'] if r['id'] in chosen]
+        displayed['active_incidents']=[i for i in displayed['active_incidents'] if i['route_id'] in chosen]
+    return displayed
+
+
+def render_compact_map(state,selected_ids=None,key='compact_map',plan_only=False):
+    """Only checked network edges, or only the actual solution edges, and their cities."""
+    displayed=visible_map_state(state,selected_ids,plan_only)
+    if not displayed['routes']:
+        st.info('Nicio conexiune de afișat pentru acest plan.'); return
+    event=st.plotly_chart(geographic_figure(displayed,selected_ids or (),all_routes=None),key=key,
+        width='stretch',on_select='rerun',selection_mode='points',config={'scrollZoom':True,'displaylogo':False})
+    detail=selected_detail(event,displayed)
+    if detail:
+        if 'city' in detail: st.caption(detail['city'])
+        else: st.caption(' — '.join(detail['cities'])+f" · cost {detail['cost']} · scor {detail['value']}")
+    st.caption('Conexiuni schematice fictive · orașe geografice reale · © OpenStreetMap contributors © CARTO')
 
 
 def selected_detail(event, state):

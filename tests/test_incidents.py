@@ -118,8 +118,9 @@ def test_incident_end_to_end_streamlit():
         assert not app.exception,app.exception
     click('Rulează simularea')
     baseline=app.session_state['baseline_json']
-    app.selectbox(key='incident_route').select(1).run()
-    click('Blochează conexiunea')
+    app.toggle(key='simulate_incidents').set_value(True).run()
+    app.session_state['qr_incidents']=[asdict(Incident('SIM-1',1))]
+    app.run()
     assert app.session_state['qr_incidents'][0]['route_id']==1
     assert app.session_state['baseline_json']==baseline
     click('Rulează simularea')
@@ -128,10 +129,9 @@ def test_incident_end_to_end_streamlit():
     assert 1 not in modified['classical']['ids_rute']
     assert modified['baseline_comparison']['baseline']['available_routes']==5
     assert modified['baseline_comparison']['disrupted']['available_routes']==4
-    click('Pregătește rapoartele HTML și PDF')
-    assert 'SIM-1' in app.session_state['report_bundle'][1]
-    assert app.session_state['report_bundle'][2].startswith(b'%PDF')
-    click('Deblochează conexiunea')
+    click('Pregătește PDF-ul simulării')
+    assert app.session_state['pdf_bundle'][1].startswith(b'%PDF')
+    app.toggle(key='simulate_incidents').set_value(False).run()
     click('Rulează simularea')
     restored=json.loads(app.session_state['experiment_json'])
     assert restored['classical']['valoare_totala']==15 and len(restored['routes'])==5
