@@ -52,6 +52,10 @@ snapshot, independent of subsequent widget reruns.
   COBYLA training, Aer sampling, exact dynamic-programming reference.
 - `experiment.py`: validated configuration, complete enumeration, shared
   classical/QUBO references, empirical statistics, JSON result snapshot.
+- `classical_optimizer.py`: Sabina's exact selection, Pareto/budget analysis,
+  alternatives, explanations and true-score QAOA evaluation.
+- `classical_bridge.py`: adapter from shared routes to Sabina's API; preserves
+  stable physical IDs and keeps hard incident closures outside the search space.
 - `experiment_ui.py`: experiment controls, comparison, map and exports.
 - `reporting.py`: matching HTML/PDF text, maps and charts using Matplotlib.
 - `analysis_qaoa/`, `README_QAOA.md`, `QAOA_VALIDATION.md`: preserved historical
@@ -102,8 +106,8 @@ experiments. Dependencies combine both UI branches; PDF uses existing Matplotlib
 
 ## Geographic map and simulated incidents
 
-The feature branch `feature/railway-incidents-real-map` extends the existing
-application; no new merge is needed. `zus` remains at its validated merge commit.
+Incident features were developed on `feature/railway-incidents-real-map` and are
+now preserved on the final integrated `zus` branch together with Sabina's work.
 
 The map now defaults to a real CARTO/OSM basemap centered on Romania, using the
 existing Plotly MapLibre technology. Pan/zoom can navigate worldwide and Streamlit
@@ -253,3 +257,67 @@ typed result, all 32 energy equivalences, tied model minima, actual ideal/noisy
 count totals, parameter propagation, unsupported configuration rejection,
 incident optimum `[0,0,1,1,0]` (score 14, cost 6), map switching without retraining,
 and matching HTML/PDF exports through Streamlit. No new dependencies are required.
+
+## Final integration of all four branches on zus
+
+The final `sabina -> zus` merge follows the completed `livia -> catalin -> zus`
+sequence. Before it, zus was fast-forwarded to the validated incident/QAOA feature
+commits and the latest remote zus commit `196288e` was merged without discarding
+either history. That remote work adds p=1/p=2 comparisons, circuit illustrations,
+notebook updates, examples and tests. Main and the original Sabina working copy
+(including its uncommitted deletion of app.py) were not changed.
+
+Sabina's `optimize_routes` now selects the canonical exact feasible plan. All
+optimal ties are still retained. Its primary tie rule is maximum score, minimum
+cost, then lexicographically smallest bit vector **in input decision order**.
+The Qiskit-key tie rule in zus's independent DP may choose another equally good
+plan; score and cost are cross-checked. The quantum sampling tie rule is preserved.
+
+`classical_analysis` in each frozen experiment contains the source result,
+Romanian explanation, top three plans, cheaper alternative, Pareto frontier,
+budget profile and exact plan-count audit. All vectors include original full bits
+and physical route IDs. Construction-cost adjustments and route closures are
+applied before the adapter. Budget profiles are bounded to 0..100 and are classical
+hypothetical analyses, not QAOA reruns. Actual ideal/noisy measurement distributions
+are evaluated with Sabina's `evaluate_qaoa_distribution`; feasible probability,
+all-optima probability and mean true score are checked and unified in the dashboard.
+No synthetic measurement counts are created for a completely closed network.
+
+The **De ce este optim acest plan? — analiza Sabina** panel is inside the existing
+Optimization Center. It includes explanations, alternative and Pareto tables,
+budget sensitivity and QAOA distribution audits. HTML/PDF exports use the same
+snapshot and include the explanation, alternatives and sensitivity charts.
+
+Conflict decisions:
+
+- `app.py`: keep the unified interface and integrate Sabina's widgets/data through
+  its existing experiment panel, rather than introduce another application.
+- Notebook: keep the current extended p=1/p=2 version; archive Sabina's solved
+  five-decision notebook as `validation/sabina_baseline_notebook.ipynb`.
+- `railway_results.json`: retain the existing historical baseline. Incoming counts
+  and metrics are identical; only training duration differs. Preserve Sabina's
+  separate historical record as `validation/sabina_railway_results.json`.
+- README: retain the unified run guide and preserve the incoming API reference in
+  `docs/SABINA_CLASSICAL_API.md`.
+- `.gitignore`: retain the union of cache, environment and generated-output rules.
+
+Recoverable backups: `backup/zus-before-sabina-20261107`,
+`backup/feature-before-sabina-20261107`, and
+`backup/zus-ready-for-sabina-20261107`. No existing branch was deleted or reset.
+
+All tests, including Sabina's original suite and cross-module workflow checks:
+
+```powershell
+python -m pytest -q
+```
+
+The preserved remote depth-comparison CLI remains available:
+
+```powershell
+python examples/compare_qaoa_depths.py --small --maxiter 30 --shots 2048
+```
+
+No new dependency is required by this merge. The current standalone source APIs
+remain available for notebooks, while the application uses one shared scenario,
+configuration and export snapshot. Historical notebook/output files are evidence
+of earlier experiments, not current dashboard values.

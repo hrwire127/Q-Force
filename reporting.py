@@ -55,6 +55,16 @@ def report_figures(result):
         ax.plot([r['evaluation'] for r in points],[r['energy'] for r in points],label=f'Restart {restart+1}')
     ax.set(xlabel='Objective evaluation',ylabel='Exact ideal expected energy'); ax.legend()
     figures.append(('QAOA convergence (ideal training)',fig))
+    if 'classical_analysis' in result:
+        analysis=result['classical_analysis']
+        fig=Figure(figsize=(10,4.5),layout='constrained'); left,right=fig.subplots(1,2)
+        frontier=analysis['pareto']
+        left.scatter([p['cost_total'] for p in frontier],[p['punctaj_total'] for p in frontier],color='#008d83')
+        left.set(xlabel='Construction cost',ylabel='True score',title='Sabina exact Pareto frontier')
+        profile=analysis['budget_profile']
+        right.step([p['buget'] for p in profile],[p['punctaj_total'] for p in profile],where='post')
+        right.set(xlabel='Hypothetical budget',ylabel='Exact best feasible score',title='Classical budget sensitivity (not QAOA)')
+        figures.append(('Classical explanation and investment trade-offs',fig))
     fig=Figure(figsize=(10,7),layout='constrained'); axes=fig.subplots(2,2).flat
     ax=axes[0]; rows=probability_rows(result)
     ax.bar(range(len(rows)),[r['Feasible'] for r in rows],label='feasible')
@@ -112,6 +122,17 @@ def report_text(result):
             f"Exact final expected energy: {q.get('energie_medie','not trained')}",
             'Training runs and optimizer status:']
         lines += [str(run) for run in q['optimizare'].get('rulari',[])]
+    if 'classical_analysis' in result:
+        analysis=result['classical_analysis']
+        lines += ['', 'SABINA CLASSICAL ANALYSIS',analysis['explanation']['rezumat'],
+                  'Canonical tie rule: '+analysis['tie_policy'],
+                  'Top feasible plans and alternatives (original route decision order):']
+        for plan in analysis['alternatives']['planuri']:
+            lines.append(f"full bits {plan['full_bits']}, route IDs {plan['ids_rute']}, cost {plan['cost_total']}, score {plan['punctaj_total']}, score gap {plan['pierdere_punctaj']}, cost saving {plan['economie_cost']}")
+        lines += [f"Pareto plans: {len(analysis['pareto'])}; exact budget profile: 0..{analysis['budget_profile'][-1]['buget']} (same effective routes).",
+                  'QAOA distribution audits using Sabina true-score evaluator:']
+        for backend,audit in result['distribution_audits'].items():
+            lines.append(f"{backend}: P(feasible)={audit['probabilitate_planuri_valide']:.6f}, P(any optimal)={audit['probabilitate_solutii_optime']:.6f}, mean score={audit['punctaj_mediu']:.6f}, mean construction cost={audit['cost_mediu']:.6f}")
     if 'scenario' in result:
         state=result['scenario']
         lines += ['',f"Scenario minute: {state['time']}; blocked route IDs: {state['blocked_ids']}",

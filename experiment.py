@@ -12,6 +12,8 @@ from typing import Any, NotRequired, TypedDict
 from uuid import uuid4
 import quantum_optimizer as qo
 from railway_incidents import scenario, connectivity, reconstruct
+from classical_bridge import (optimize_shared_routes,build_analysis,
+                              evaluate_shared_distribution,evaluate_shared_plan)
 
 
 @dataclass(frozen=True)
@@ -60,6 +62,9 @@ class ExperimentResult(TypedDict):
     samples: dict[str, Any]
     counts_by_backend: dict[str, dict[str, int]]
     exact_ideal_statistics: dict[str, float]
+    classical_analysis: dict[str, Any]
+    distribution_audits: dict[str, Any]
+    sampled_plan_audits: dict[str, Any]
     resources: dict[str, Any]
     versions: dict[str, str]
     reference_method: str
@@ -94,7 +99,8 @@ def references(routes, budget, penalty):
     plans = [qo.analyse_plan(bits, routes, budget, penalty)
              for bits in product((0, 1), repeat=len(routes))]
     valid = [p for p in plans if p['valid']]
-    classical = min(valid, key=lambda p: (-p['valoare_totala'], p['cost_total'], p['bitstring']))
+    exact=optimize_shared_routes(routes,budget)
+    classical = next(p for p in valid if p['bits']==exact['vector_binar'])
     minimum = min(plans, key=lambda p: (p['energie'], p['bitstring']))
     return plans, classical, minimum
 
@@ -154,6 +160,12 @@ def run_experiment(routes, budget=7, penalty=.7, p=1, shots=2048, seed=2026,
     started = perf_counter()
     reference_started=perf_counter()
     plans, classical, minimum = references(routes,budget,penalty)
+    sabina_result=optimize_shared_routes(routes,budget)
+    if sabina_result['planuri_evaluate']!=len(plans):
+        raise RuntimeError('Classical modules disagree on the current decision space.')
+    classical_analysis=build_analysis(routes,budget,sabina_result)
+    if classical_analysis['audit']['planuri_valide']!=sum(plan['valid'] for plan in plans):
+        raise RuntimeError('Classical feasibility audits disagree.')
     reference_seconds=perf_counter()-reference_started
     qubo=qo.construct_qubo(routes,budget,penalty) if routes else {'linear':[], 'quadratic':[], 'offset':float(penalty*budget**2)}
     ising=qo.qubo_to_ising(qubo) if routes else {'h':[], 'J':[], 'constant':float(penalty*budget**2)}
@@ -184,6 +196,15 @@ def run_experiment(routes, budget=7, penalty=.7, p=1, shots=2048, seed=2026,
         resources['noisy'] = dict(resource,shots=shots,sampling_seconds=perf_counter()-noisy_started)
         counts_by_backend['noisy']=counts
     active_ids=[r['id'] for r in routes]; original_ids=[r['id'] for r in original_routes]
+    def enrich_classical_tree(node):
+        if isinstance(node,dict):
+            if 'vector_binar' in node:
+                node['full_bits']=reconstruct(node['vector_binar'],active_ids,original_ids)
+                node['ids_rute']=[rid for bit,rid in zip(node['vector_binar'],active_ids) if bit]
+            for value in node.values(): enrich_classical_tree(value)
+        elif isinstance(node,list):
+            for value in node: enrich_classical_tree(value)
+    enrich_classical_tree(classical_analysis)
     for plan in plans:
         plan['full_bits']=reconstruct(plan['bits'],active_ids,original_ids)
         plan['full_bitstring']=''.join(map(str,reversed(plan['full_bits'])))
@@ -213,6 +234,27 @@ def run_experiment(routes, budget=7, penalty=.7, p=1, shots=2048, seed=2026,
         'expected_energy':sum(exact_probs[plan['bitstring']]*plan['energie'] for plan in plans),
         'mean_true_score':sum(exact_probs[plan['bitstring']]*plan['valoare_totala'] for plan in plans)}
     exact_statistics['over_budget_rate']=1-exact_statistics['p_feasible']
+    distribution_audits={}
+    sampled_plan_audits={}
+    for backend,counts in counts_by_backend.items():
+        if not counts: continue
+        audit=evaluate_shared_distribution(routes,budget,counts)
+        canonical=samples[backend]
+        pairs={'p_feasible':'probabilitate_planuri_valide',
+               'p_optimal_feasible':'probabilitate_solutii_optime',
+               'mean_true_score':'punctaj_mediu'}
+        for field,source in pairs.items():
+            if not isclose(canonical[field],audit[source],rel_tol=1e-9,abs_tol=1e-9):
+                raise RuntimeError(f'Sabina analysis disagrees with {backend} {field}.')
+            canonical[field]=audit[source]
+        canonical['mean_construction_cost']=audit['cost_mediu']
+        audit['most_frequent_tie_policy']='lexicographic input-order bit vector; the main QAOA panel retains its Qiskit-key tie rule'
+        distribution_audits[backend]=audit
+        best=canonical['best_feasible']
+        sampled_plan_audits[backend]={
+            'most_frequent':evaluate_shared_plan(routes,budget,canonical['most_frequent']['bits']),
+            'best_feasible':evaluate_shared_plan(routes,budget,best['bits']) if best else None}
+    enrich_classical_tree(sampled_plan_audits)
     scenario_id=sha256(json.dumps([original_routes,state['incidents'],scenario_time],sort_keys=True).encode()).hexdigest()[:16]
     result = dict(created_utc=datetime.now(timezone.utc).isoformat(), routes=routes,
         experiment_id=str(uuid4()),scenario_id=scenario_id,
@@ -226,11 +268,13 @@ def run_experiment(routes, budget=7, penalty=.7, p=1, shots=2048, seed=2026,
                     active_incident_ids=[i['incident_id'] for i in state['active_incidents']]),
         classical=classical, qubo_minimum=minimum, plan_count=len(plans),
         classical_optima=classical_optima,qubo_minima=qubo_minima,
+        classical_analysis=classical_analysis,distribution_audits=distribution_audits,
+        sampled_plan_audits=sampled_plan_audits,
         model={'energy_formula':'-value + penalty * (construction_cost - budget)^2',
                'qubo':{k:v.tolist() if hasattr(v,'tolist') else v for k,v in qubo.items()},
                'ising':{k:v.tolist() if hasattr(v,'tolist') else v for k,v in ising.items()}},
         exact_ideal_statistics=exact_statistics,counts_by_backend=counts_by_backend,
-        reference_method='complete exact enumeration; cross-checked with zus exact DP' if routes else 'exact deterministic empty plan',reference_seconds=reference_seconds,
+        reference_method='Sabina exact enumeration + QUBO audit; cross-checked with zus exact DP' if routes else 'Sabina exact deterministic empty plan',reference_seconds=reference_seconds,
         samples=samples, quantum=q, resources=resources, runtime_seconds=perf_counter()-started,
         versions={name:version(name) for name in ('qiskit','qiskit-aer','numpy','scipy','streamlit','plotly')})
     return json.loads(json.dumps(result,allow_nan=False))

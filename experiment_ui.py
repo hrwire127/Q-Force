@@ -114,6 +114,23 @@ def render_experiment(routes,budget,state=None):
     st.caption('E(x) = −scor(x) + penalizare × (cost(x) − buget)². Energia și fezabilitatea sunt obiective distincte.')
     if not result['qubo_minimum']['valid']: st.warning('Minimul QUBO depășește bugetul.')
     st.caption(f"Enumerare exactă: {result['plan_count']} planuri, {result['feasible_plan_count']} fezabile, {len(result['classical_optima'])} optime fezabile și {len(result['qubo_minima'])} minime de energie.")
+    if 'classical_analysis' in result:
+        analysis=result['classical_analysis']
+        with st.expander('De ce este optim acest plan? — analiza Sabina',expanded=True):
+            st.write(analysis['explanation']['rezumat'])
+            st.caption('Analiza folosește aceleași rute disponibile, costuri și buget ca QAOA. Rutele închise au fost eliminate înainte de enumerare.')
+            st.write('Top 3 planuri fezabile (inclusiv egalități optime)')
+            columns=['full_bits','ids_rute','cost_total','punctaj_total','pierdere_punctaj','economie_cost']
+            st.dataframe([{k:p[k] for k in columns} for p in analysis['alternatives']['planuri']],hide_index=True)
+            st.write('Frontiera Pareto: cost / punctaj')
+            st.dataframe([{k:p[k] for k in ('full_bits','ids_rute','cost_total','punctaj_total')} for p in analysis['pareto']],hide_index=True)
+            profile=pd.DataFrame(analysis['budget_profile']).set_index('buget')
+            st.line_chart(profile['punctaj_total'],x_label='Buget',y_label='Punctaj maxim fezabil')
+            st.caption('Graficul bugetului și explicația sunt calcule clasice ipotetice, nu noi rulări QAOA.')
+            st.write('Audit clasic al distribuțiilor QAOA')
+            st.dataframe([{'Backend':backend,**{k:audit[k] for k in (
+                'probabilitate_planuri_valide','probabilitate_solutii_optime','punctaj_mediu','cost_mediu')}}
+                for backend,audit in result['distribution_audits'].items()],hide_index=True)
     views={'Rețea disponibilă':None,'Optim clasic':result['classical'],'Minim QUBO':result['qubo_minimum'],'Cel mai frecvent QAOA':sample['most_frequent']}
     if best: views['Cel mai bun QAOA fezabil']=best
     choice=st.selectbox('Plan pe hartă',list(views),index=1); plan=views[choice]
