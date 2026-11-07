@@ -16,7 +16,7 @@
       0.2913576673669285
     ],
     "evaluations": 93,
-    "seconds": 0.17057199999999284,
+    "seconds": 0.2085880999998153,
     "method": "exact statevector expectation"
   },
   "ideal_counts": {

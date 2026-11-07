@@ -1,0 +1,131 @@
+/* Stiluri pentru elementele proprii; nu depind de clase interne Streamlit. */
+.qr-side-brand { display: flex; align-items: center; gap: .75rem; padding: .15rem 0 .35rem; }
+.qr-side-icon {
+    display: grid; place-items: center; width: 2.35rem; height: 2.35rem;
+    border: 1px solid #438b83; border-radius: .7rem; background: #244a50;
+}
+.qr-side-brand strong, .qr-side-brand small { display: block; line-height: 1.25; }
+.qr-side-brand strong { color: #f0f5ff; font-size: .91rem; letter-spacing: .12em; }
+.qr-side-brand small { color: #9ab3c1; font-size: .62rem; letter-spacing: .13em; }
+.qr-budget-readout {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: .45rem 0 .2rem; padding: .55rem .8rem; border: 1px solid #315764;
+    border-radius: .7rem; background: #183747;
+}
+.qr-budget-readout span { color: #c0d3dd; font-size: .78rem; }
+.qr-budget-readout strong { color: #55e6c1; font-size: 1.45rem; line-height: 1; }
+.qr-budget-readout small { color: #9bbcc0; font-size: .75rem; font-weight: 500; }
+.qr-selection-count {
+    display: inline-block; margin: .1rem 0 .7rem; padding: .28rem .58rem;
+    border: 1px solid #315764; border-radius: 999px; color: #c5d9e3;
+    background: #183140; font-size: .78rem;
+}
+.qr-selection-count strong { color: #55e6c1; }
+.qr-route-meta {
+    width: fit-content; margin: -.35rem 0 .65rem 1.9rem; padding: .12rem .4rem;
+    border-radius: .3rem; color: #9db2c4; font-size: .72rem;
+}
+.qr-route-meta.is-selected { color: #b7e9da; background: #1d3b45; }
+.qr-route-meta span { color: #6b8396; padding: 0 .15rem; }
+
+.qr-hero {
+    display: flex; align-items: center; justify-content: space-between; gap: 1.4rem;
+    min-height: 10rem; margin: .15rem 0 1.1rem; padding: 1.05rem 1.5rem;
+    border: 1px solid #305566; border-radius: 1.15rem;
+    background: linear-gradient(118deg, #1b3149 0%, #13283b 60%, #163e46 100%);
+}
+.qr-hero-copy { min-width: 0; }
+.qr-kicker, .qr-section-label {
+    color: #55e6c1; font-size: .68rem; font-weight: 800; letter-spacing: .15em;
+}
+.qr-hero h1 {
+    margin: .35rem 0 .2rem; color: #f0f5ff;
+    font-size: clamp(2rem, 3.2vw, 3.25rem); line-height: 1.05; letter-spacing: -.04em;
+}
+.qr-tagline { display: block; color: #55e6c1; font-size: .98rem; font-weight: 700; }
+.qr-hero p { max-width: 42rem; margin: .55rem 0 0; color: #cad9e6; font-size: .86rem; line-height: 1.45; }
+.qr-hero-facts {
+    display: flex; flex: 0 0 auto; gap: 1.25rem; align-items: center;
+    padding: .65rem 0 .65rem 1.4rem; border-left: 1px solid #4b6f78;
+}
+.qr-hero-facts div { min-width: 4rem; }
+.qr-hero-facts strong, .qr-hero-facts span { display: block; }
+.qr-hero-facts strong { color: #f0f5ff; font-size: 2.1rem; line-height: 1.1; }
+.qr-hero-facts span { color: #b4cbd0; font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; }
+
+.qr-section-label { margin: 1.1rem 0 .3rem; }
+.qr-kpi-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .8rem; margin: .35rem 0 1.4rem;
+}
+.qr-kpi {
+    min-width: 0; min-height: 7.1rem; padding: .85rem 1rem;
+    border: 1px solid #294258; border-radius: .85rem; background: #162238;
+    transition: border-color .16s ease, transform .16s ease;
+}
+.qr-kpi:hover { border-color: #438b83; transform: translateY(-2px); }
+.qr-kpi-icon {
+    float: right; display: grid; place-items: center; width: 1.7rem; height: 1.7rem;
+    border-radius: .5rem; background: #203f4b; color: #55e6c1; font-size: .95rem;
+}
+.qr-kpi-label, .qr-kpi small, .qr-kpi strong { display: block; }
+.qr-kpi-label { color: #b8c9d8; font-size: .78rem; }
+.qr-kpi strong { margin: .32rem 0 .05rem; color: #f0f5ff; font-size: 2.05rem; line-height: 1.1; }
+.qr-kpi small { color: #91a9ba; font-size: .68rem; }
+
+.qr-map-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 11rem; padding: 1.2rem; text-align: center;
+    border: 1px dashed #35576b; border-radius: .75rem;
+    background: radial-gradient(circle at center, #1e364c 0%, #162238 72%);
+}
+.qr-map-icon { color: #55e6c1; font-size: 1.7rem; line-height: 1; }
+.qr-map-placeholder strong { margin-top: .3rem; color: #f0f5ff; }
+.qr-map-placeholder p { margin: .3rem 0 0; color: #b4c7d5; font-size: .84rem; }
+.qr-status {
+    display: inline-block; margin-top: .65rem; padding: .28rem .55rem;
+    border: 1px solid #3b626b; border-radius: .4rem; background: #1c3a47;
+    color: #b8ded5; font-size: .62rem; font-weight: 800; letter-spacing: .08em;
+}
+
+.qr-result-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem; margin: .45rem 0 .8rem;
+}
+.qr-result-grid > div, .qr-result-routes {
+    padding: .85rem 1rem; border: 1px solid #294258;
+    border-radius: .8rem; background: #162238;
+}
+.qr-result-grid span, .qr-result-grid strong { display: block; }
+.qr-result-grid span { color: #b8c9d8; font-size: .75rem; }
+.qr-result-grid strong { margin-top: .35rem; color: #f0f5ff; font-size: 1.55rem; }
+.qr-result-grid .qr-result-pending { color: #a8c4d4; font-size: .95rem; }
+.qr-result-routes strong { color: #f0f5ff; font-size: .88rem; }
+.qr-result-routes p { margin: .35rem 0 0; color: #a8bdcc; font-size: .8rem; }
+.qr-footer {
+    margin: 2rem 0 .5rem; padding-top: .8rem; border-top: 1px solid #263b50;
+    color: #8ca6b8; font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+}
+.qr-footer span { color: #55e6c1; padding: 0 .35rem; }
+
+@media (max-width: 900px) {
+    .qr-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .qr-hero { align-items: flex-start; }
+}
+@media (max-width: 650px) {
+    .qr-hero { flex-direction: column; gap: .55rem; padding: 1rem 1.1rem; }
+    .qr-hero-facts { gap: 1.1rem; width: 100%; padding: .5rem 0 0; border-left: 0; border-top: 1px solid #4b6f78; }
+    .qr-hero-facts strong { font-size: 1.5rem; }
+    .qr-map-placeholder { min-height: 9rem; }
+    .qr-result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .qr-result-grid > div:last-child { grid-column: span 2; }
+}
+@media (max-width: 340px) {
+    .qr-kpi-grid, .qr-result-grid { grid-template-columns: 1fr; }
+    .qr-result-grid > div:last-child { grid-column: auto; }
+    .qr-kpi { min-height: 5.7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .qr-kpi { transition: none; }
+    .qr-kpi:hover { transform: none; }
+}
