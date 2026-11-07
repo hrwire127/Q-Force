@@ -1,344 +1,438 @@
-"""Q-FORCE 2.0 — centru de control pentru o rețea feroviară fictivă."""
-from __future__ import annotations
+"""Dashboard Streamlit pentru configurarea scenariilor Quantum Railways."""
 
-import csv
-import io
-import json
-import time
+from collections import defaultdict
 from pathlib import Path
+import unicodedata
 
-import plotly.graph_objects as go
+import altair as alt
 import streamlit as st
 
-from railway_data import DEFAULT_BUDGET, DEMO_IDS, POSITIONS, ROUTES
-from railway_map import calculeaza_plan, deseneaza_harta, recomandare_din_masuratori, starea_rutei
-from railway_scenarios import block_route, compare_states, restore_route
-from railway_simulation import DURATION, SPEEDS, NetworkState, SimulationEngine, state_at_time
-
-st.set_page_config(page_title="Q-FORCE | Quantum Railways 2.0", page_icon="🚆", layout="wide")
-st.markdown("""<style>
-.stApp,[data-testid="stSidebar"]{background:#0B1220;color:#F8FAFC}
-[data-testid="stSidebar"]{border-right:1px solid #263A55}
-.block-container{max-width:1600px;padding-top:1.4rem}
-h1,h2,h3{color:#F8FAFC;letter-spacing:-.025em}
-.hero{background:linear-gradient(115deg,#111C2E,#142B41 62%,#0B3037);border:1px solid #284761;
-border-radius:18px;padding:1.15rem 1.5rem;margin-bottom:1rem;box-shadow:0 12px 38px #02071366}
-.eyebrow{color:#38BDF8;font-size:.8rem;font-weight:800;letter-spacing:.16em}
-.hero h1{margin:.1rem 0;font-size:clamp(1.7rem,2.6vw,2.6rem)}.hero p{color:#94A3B8;margin:.2rem 0}
-.pill{display:inline-block;border:1px solid #10B981;border-radius:30px;padding:.3rem .7rem;
-background:#063b33;color:#86efca;font-size:.78rem;font-weight:800;letter-spacing:.08em}
-.paused{border-color:#F59E0B;background:#433013;color:#fcd34d}
-.no-motion{animation:none!important}
-[data-testid="stMetric"]{background:#111C2E;border:1px solid #263A55;border-radius:14px;
-padding:.7rem 1rem;min-height:104px;box-shadow:0 6px 24px #02071344}
-[data-testid="stMetricLabel"]{color:#94A3B8}[data-testid="stMetricValue"]{color:#F8FAFC}
-[data-testid="stPlotlyChart"]{background:#111C2E;border:1px solid #263A55;border-radius:16px;overflow:hidden}
-.event{border-left:3px solid #38BDF8;background:#111C2E;border-radius:0 10px 10px 0;
-padding:.5rem .8rem;margin:.3rem 0;color:#cbd5e1}.incident{border-color:#EF4444;background:#381d2a}
-.timeline-title{color:#38BDF8;font-weight:800;letter-spacing:.12em;font-size:.85rem}
-.stButton button[kind="primary"]{background:#10B981;color:#06291f;border:0;font-weight:750}
-@media(prefers-reduced-motion:no-preference){.pill:not(.paused){animation:pulse 2.6s infinite}}
-@keyframes pulse{50%{box-shadow:0 0 16px #10B98166}}
-</style>""", unsafe_allow_html=True)
+from railway_catalog import POSITIONS, ROUTES
+from railway_data import DEFAULT_BUDGET, DEMO_IDS
+from railway_map import deseneaza_harta
 
 
-@st.cache_data
-def qaoa_results() -> dict:
-    return json.loads(Path(__file__).with_name("railway_results.json").read_text(encoding="utf-8"))
+st.set_page_config(
+    page_title="Quantum Railways | Q-FORCE",
+    page_icon="🚆",
+    layout="wide",
+    initial_sidebar_state="auto",
+)
 
 
-def qaoa_recommendation() -> list[int]:
-    return recomandare_din_masuratori(qaoa_results()["ideal_counts"], ROUTES, DEMO_IDS, DEFAULT_BUDGET)
+def reset_selection():
+    """Revine la rutele selectate inițial în notebook."""
+    for route in ROUTES:
+        st.session_state[f"selected_route_{route['id']}"] = route["id"] in DEMO_IDS
 
 
-SCENARIOS = {"Rețeaua completă": ([], [], 7), "Rute recomandate": (None, [], 7),
-             "Blocaj feroviar": (None, [6], 7), "Buget modificat": (None, [], 5)}
-ROUTE_IDS = {r["id"] for r in ROUTES}
-LABELS = {r["id"]: f"{r['id']:02d} · {r['cities'][0]} → {r['cities'][1]}" for r in ROUTES}
+def clear_selection():
+    """Golește eligibilitatea rutelor fără să modifice bugetul."""
+    for route in ROUTES:
+        st.session_state[f"selected_route_{route['id']}"] = False
 
 
-def baseline() -> NetworkState:
-    return NetworkState(tuple(st.session_state.selected_ids), tuple(st.session_state.blocked_ids),
-                        st.session_state.budget)
+def sync_route_selection(route_id):
+    """Păstrează selecția chiar dacă filtrul ascunde temporar checkboxul."""
+    st.session_state[f"selected_route_{route_id}"] = st.session_state[f"route_{route_id}"]
 
 
-def apply_scenario() -> None:
-    selected, blocked, budget = SCENARIOS[st.session_state.scenario]
-    st.session_state.selected_ids = list(qaoa_recommendation() if selected is None else selected)
-    st.session_state.blocked_ids = list(blocked)
-    st.session_state.budget = budget
-    st.session_state.engine = None
+def route_name(route):
+    return f"{route['cities'][0]} – {route['cities'][1]}"
 
 
-def reset_scenario() -> None:
-    st.session_state.scenario = "Rute recomandate"
-    apply_scenario()
+def normalize_search(value):
+    """Ignoră majusculele, diacriticele și forma separatorului dintre orașe."""
+    normalized = unicodedata.normalize("NFD", value.casefold())
+    return " ".join(
+        "".join(
+            character if character.isalnum() or character == "#" else " "
+            for character in normalized if not unicodedata.combining(character)
+        ).split()
+    )
 
 
-def start_live() -> None:
-    engine = SimulationEngine.create(baseline(), tuple(DEMO_IDS), seed=st.session_state.seed)
-    engine.speed = st.session_state.speed
-    engine.start(time.monotonic())
-    st.session_state.engine = engine
+def filter_routes(routes, query):
+    term = normalize_search(query.strip())
+    if not term:
+        return routes
+    return [
+        route for route in routes
+        if term in normalize_search(route_name(route)) or term in f"#{route['id']:02d}"
+    ]
 
 
-def seek_timeline() -> None:
-    engine = st.session_state.engine
-    if engine:
-        engine.seek(st.session_state.timeline_position, time.monotonic())
+def route_rows(routes):
+    """Datele din catalog; costul internațional include deja frontiera."""
+    return [
+        {
+            "ID": route["id"],
+            "Rută": route_name(route),
+            "Cost": route["cost"],
+            "Puncte": route["value"],
+            "Tip": "Internațională" if route["international"] else "Națională",
+            "Cost frontieră": route["border_cost"],
+        }
+        for route in routes
+    ]
 
 
-def change_speed() -> None:
-    engine = st.session_state.engine
-    if engine:
-        engine.set_speed(st.session_state.speed, time.monotonic())
+def chart_rows(routes):
+    """Separă doar punctele identice, fără să schimbe costul sau punctajul."""
+    grouped_ids = defaultdict(list)
+    for route in routes:
+        grouped_ids[(route["cost"], route["value"])].append(route["id"])
+
+    offsets = {}
+    for ids in grouped_ids.values():
+        ids.sort()  # Același ID primește mereu aceeași poziție în grup.
+        for index, route_id in enumerate(ids):
+            offsets[route_id] = (index - (len(ids) - 1) / 2) * 0.2
+
+    return [
+        {**row, "Cost vizual": row["Cost"] + offsets[row["ID"]]}
+        for row in route_rows(routes)
+    ]
 
 
-def clock(seconds: float) -> str:
-    minute, second = divmod(int(seconds), 60)
-    return f"{8 + minute // 60:02d}:{minute % 60:02d}:{second:02d}"
+def show_route_checks(routes):
+    """Păstrează checkbox-urile native și evidențiază discret selecția."""
+    for route in routes:
+        route_id = route["id"]
+        st.session_state[f"route_{route_id}"] = st.session_state[f"selected_route_{route_id}"]
+        checked = st.checkbox(
+            f"#{route_id:02d}  {route_name(route)}",
+            key=f"route_{route_id}",
+            on_change=sync_route_selection,
+            args=(route_id,),
+        )
+        border = f" · frontieră {route['border_cost']}" if route["international"] else ""
+        selected_class = " is-selected" if checked else ""
+        st.markdown(
+            f'<div class="qr-route-meta{selected_class}">'
+            f"Cost {route['cost']}{border} <span>·</span> {route['value']} puncte</div>",
+            unsafe_allow_html=True,
+        )
 
 
-def active_incidents(engine: SimulationEngine) -> dict:
-    incidents = {}
-    for _, event in sorted(enumerate(engine.events), key=lambda pair: (pair[1].timestamp, pair[0])):
-        if event.timestamp > engine.position:
-            break
-        if event.event_type == "ROUTE_BLOCKED":
-            incidents[event.route_id] = event
-        elif event.event_type == "ROUTE_RESTORED":
-            incidents.pop(event.route_id, None)
-    return incidents
+def cost_value_chart(routes):
+    """Compară rutele individuale, fără a reprezenta un plan optimizat."""
+    # Reperele întregi fac vizibile valori precum 9 puncte, nu doar 8 și 10.
+    axis_style = dict(
+        gridColor="#2A4059",
+        labelColor="#B8C9D8",
+        titleColor="#F0F5FF",
+        labelFontSize=11,
+        titleFontSize=12,
+    )
+    cost_axis = alt.Axis(values=list(range(max(route["cost"] for route in routes) + 1)), **axis_style)
+    points_axis = alt.Axis(
+        values=list(range(max(route["value"] for route in routes) + 1)),
+        labelOverlap=False,
+        **axis_style,
+    )
+    return (
+        alt.Chart({"values": chart_rows(routes)})
+        .mark_circle(size=230, opacity=0.9, stroke="#0B1220", strokeWidth=1.5)
+        .encode(
+            x=alt.X(
+                "Cost vizual:Q",
+                axis=cost_axis,
+                title="Cost total",
+                scale=alt.Scale(domain=[0, max(route["cost"] for route in routes) + 0.5]),
+            ),
+            y=alt.Y(
+                "Puncte:Q",
+                axis=points_axis,
+                title="Punctaj",
+                scale=alt.Scale(domain=[0, max(route["value"] for route in routes) + 0.7]),
+            ),
+            color=alt.Color(
+                "Tip:N",
+                scale=alt.Scale(
+                    domain=["Națională", "Internațională"],
+                    range=["#55E6C1", "#83A8FF"],
+                ),
+                legend=alt.Legend(
+                    title=None,
+                    orient="top",
+                    direction="horizontal",
+                    labelColor="#F0F5FF",
+                    labelFontSize=12,
+                    symbolSize=110,
+                ),
+            ),
+            tooltip=[
+                alt.Tooltip("ID:Q", title="ID"),
+                alt.Tooltip("Rută:N", title="Rută"),
+                alt.Tooltip("Cost:Q", title="Cost total"),
+                alt.Tooltip("Puncte:Q", title="Punctaj"),
+                alt.Tooltip("Tip:N", title="Categorie"),
+                alt.Tooltip("Cost frontieră:Q", title="Cost frontieră"),
+            ],
+        )
+        .properties(height=360)
+        .configure_view(stroke=None)
+        .configure(background="#162238")
+    )
 
 
-for key, initial in (("scenario", "Rute recomandate"), ("selected_ids", qaoa_recommendation()),
-                     ("blocked_ids", []), ("budget", 7), ("engine", None),
-                     ("speed", 1.0), ("seed", 2026), ("reduced_motion", False),
-                     ("map_revision", 0)):
-    if key not in st.session_state:
-        st.session_state[key] = initial
+def render_map_panel(figure=None):
+    """Punctul de integrare pentru figura Plotly primită de la membrul 2."""
+    with st.container(border=True):
+        if figure is not None:
+            st.plotly_chart(figure, width="stretch")
+        else:
+            st.markdown(
+                '<div class="qr-map-placeholder">'
+                '<span class="qr-map-icon">⌖</span>'
+                '<strong>Vizualizarea rețelei</strong>'
+                '<p>Harta interactivă va fi disponibilă după integrarea modulului de rețea.</p>'
+                '<span class="qr-status">MODUL ÎN CURS DE DEZVOLTARE</span>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+
+
+# Inițializarea se face înaintea widgeturilor pentru ca resetarea să fie sigură.
+for route in ROUTES:
+    st.session_state.setdefault(
+        f"selected_route_{route['id']}",
+        st.session_state.get(f"route_{route['id']}", route["id"] in DEMO_IDS),
+    )
+
+styles = Path(__file__).with_name("styles.css").read_text(encoding="utf-8")
+st.markdown(f"<style>{styles}</style>", unsafe_allow_html=True)
+
+national_routes = [route for route in ROUTES if not route["international"]]
+international_routes = [route for route in ROUTES if route["international"]]
+selected_count = sum(st.session_state[f"selected_route_{route['id']}"] for route in ROUTES)
 
 with st.sidebar:
-    st.markdown("### ⚡ Q-FORCE")
-    st.caption("SCENARIO CONTROL")
-    locked = st.session_state.engine is not None
-    st.selectbox("Scenariu", list(SCENARIOS), key="scenario", on_change=apply_scenario, disabled=locked)
-    st.button("Aplică recomandarea QAOA", on_click=lambda: st.session_state.update(
-        selected_ids=qaoa_recommendation()), width="stretch", disabled=locked)
-    st.multiselect("Rute selectate", list(LABELS), format_func=LABELS.get,
-                   key="selected_ids", disabled=locked)
-    st.multiselect("Rute blocate", list(LABELS), format_func=LABELS.get,
-                   key="blocked_ids", disabled=locked)
-    st.number_input("Buget · unități", min_value=0, max_value=100, step=1,
-                    key="budget", disabled=locked)
-    if locked:
-        st.caption("Selecția inițială este păstrată. Folosește Incident Manager sau resetează simularea.")
+    st.markdown(
+        '<div class="qr-side-brand"><span class="qr-side-icon">🚆</span>'
+        '<div><strong>Q-FORCE</strong><small>RAILWAY INTELLIGENCE</small></div></div>',
+        unsafe_allow_html=True,
+    )
+    st.caption("Configurează un scenariu pentru rețeaua fictivă din laborator.")
     st.divider()
-    st.caption("LIVE SIMULATION")
-    st.number_input("Seed demonstrație", min_value=0, max_value=999999, step=1,
-                    key="seed", disabled=locked)
-    st.select_slider("Viteză", options=SPEEDS, format_func=lambda x: f"{x:g}×",
-                     key="speed", on_change=change_speed)
-    st.button("START LIVE SIMULATION", on_click=start_live, type="primary",
-              width="stretch", disabled=locked)
-    st.button("Reset Simulation", on_click=lambda: st.session_state.update(engine=None),
-              width="stretch", disabled=not locked)
-    st.button("Reset Scenario", on_click=reset_scenario, width="stretch")
+
+    st.subheader("Bugetul proiectului")
+    budget = st.slider(
+        "Buget disponibil",
+        min_value=1,
+        max_value=15,
+        value=DEFAULT_BUDGET,
+        step=1,
+        key="budget",
+        help="Bugetul limitează suma costurilor rutelor recomandate ulterior.",
+    )
+    st.markdown(
+        f'<div class="qr-budget-readout"><span>Buget selectat</span>'
+        f'<strong>{budget}<small> / 15</small></strong></div>',
+        unsafe_allow_html=True,
+    )
+    st.caption("Buget exprimat în unități fictive.")
     st.divider()
-    st.caption("DISPLAY")
-    show_unselected = st.toggle("Arată rutele nealese", value=True)
-    use_tiles = st.toggle("Fundal cartografic online", value=True)
-    st.toggle("Reduced Motion", key="reduced_motion")
-    st.button("Recentrează harta", on_click=lambda: st.session_state.update(
-        map_revision=st.session_state.map_revision + 1), width="stretch")
-    inspected = st.selectbox("Inspectează ruta", [None, *LABELS],
-                             format_func=lambda i: "Nicio rută" if i is None else LABELS[i])
-    st.caption("LIVE SIMULATION — SYNTHETIC DATA. Liniile sunt conexiuni schematice.")
 
+    st.subheader("Rute eligibile")
+    st.markdown(
+        f'<div class="qr-selection-count"><strong>{selected_count}</strong> din '
+        f'{len(ROUTES)} rute bifate</div>',
+        unsafe_allow_html=True,
+    )
+    st.caption("Bifarea face ruta disponibilă pentru analiză, nu o aprobă pentru construcție.")
+    reset_col, clear_col = st.columns(2, gap="small")
+    with reset_col:
+        st.button(
+            "↺ Resetează",
+            key="reset_selection",
+            on_click=reset_selection,
+            width="stretch",
+            disabled=not ROUTES,
+        )
+    with clear_col:
+        st.button(
+            "Golește",
+            key="clear_selection",
+            on_click=clear_selection,
+            width="stretch",
+            disabled=not ROUTES,
+        )
 
-@st.fragment(run_every="1s")
-def control_center() -> None:
-    engine: SimulationEngine | None = st.session_state.engine
-    if engine:
-        engine.advance(time.monotonic())
-        state, incidents = engine.state(), active_incidents(engine)
-    else:
-        state, incidents = baseline(), {}
-    plan = calculeaza_plan(ROUTES, state.selected_ids, state.blocked_ids, state.budget)
-    badge = "LIVE" if engine and engine.running else "PAUSED" if engine else "STANDBY"
-    pill = "pill" if engine and engine.running else "pill paused"
-    if st.session_state.reduced_motion:
-        pill += " no-motion"
-    current_clock = clock(engine.position if engine else 0)
-    st.markdown(f"""<div class="hero"><div class="eyebrow">Q-FORCE / OPERATIONS</div>
-    <h1>QUANTUM RAILWAYS 2.0</h1><p>LIVE NETWORK CONTROL CENTER · Rețea didactică a României</p>
-    <span class="{pill}">{badge} · LIVE SIMULATION — SYNTHETIC DATA</span>
-    <span style="margin-left:1rem;color:#38BDF8;font-weight:800">ORA VIRTUALĂ {current_clock}</span></div>""",
-                unsafe_allow_html=True)
-    if incidents:
-        st.error("INCIDENT ACTIV · " + ", ".join(f"{e.event_id}: ruta {i} blocată"
-                                            for i, e in incidents.items()))
-    if plan["conflicte"]:
-        st.warning("Rutele blocate sunt excluse din plan: " + ", ".join(map(str, plan["conflicte"])))
-    if not plan["valid"]:
-        st.error(f"Buget depășit cu {plan['cost'] - state.budget:g} unități.")
-    metrics = [("Rute active", plan["numar_active"]), ("Rute blocate", plan["numar_blocate"]),
-               ("Cost total", f"{plan['cost']:g}"), ("Beneficiu total", f"{plan['beneficiu']:g}"),
-               ("Buget", f"{state.budget:g}"), ("Status plan", "VALID" if plan["valid"] else "DEPĂȘIT")]
-    for group in (metrics[:3], metrics[3:]):
-        for column, (label, value) in zip(st.columns(3), group):
-            column.metric(label, value)
-    st.progress(min(plan["cost"] / state.budget, 1.0) if state.budget else (1.0 if plan["cost"] else 0.0),
-                text=f"Buget utilizat: {plan['cost']:g} / {state.budget:g}")
+    search_query = st.text_input(
+        "Caută rută sau oraș",
+        placeholder="Ex.: Brașov, Sofia sau #06",
+        key="route_search",
+    )
+    matching_routes = filter_routes(ROUTES, search_query)
 
-    tab_live, tab_time, tab_compare, tab_qaoa = st.tabs(
-        ["LIVE NETWORK", "TIMELINE & REPLAY", "BEFORE / AFTER", "QAOA INSIGHTS"])
-    with tab_live:
-        figure = deseneaza_harta(ROUTES, state.selected_ids, state.blocked_ids, POSITIONS,
-            fundal_online=use_tiles, arata_nealese=show_unselected, incidente=incidents,
-            ruta_inspectata=inspected, reduced_motion=st.session_state.reduced_motion)
-        st.plotly_chart(figure, width="stretch", key=f"live_map_{st.session_state.map_revision}",
-                        config={"scrollZoom": True, "displaylogo": False})
-        left, right = st.columns([2, 1])
-        with left:
-            st.markdown("#### INCIDENT MANAGER")
-            route_id = st.selectbox("Ruta afectată", list(LABELS), format_func=LABELS.get)
-            buttons = st.columns(2)
-            if buttons[0].button("SIMULATE EMERGENCY", type="primary", width="stretch",
-                                 disabled=route_id in state.blocked_ids):
-                if engine is None:
-                    start_live()
-                    engine = st.session_state.engine
-                    engine.pause(time.monotonic())
-                block_route(engine, route_id, ROUTE_IDS)
-                st.rerun()
-            if buttons[1].button("RESTORE ROUTE", width="stretch",
-                                 disabled=engine is None or route_id not in state.blocked_ids) and engine:
-                restore_route(engine, route_id, ROUTE_IDS)
-                st.rerun()
-        with right:
-            st.markdown("#### NETWORK STATUS")
-            st.write(f"**{plan['numar_active']}** active · **{plan['numar_blocate']}** blocate")
-            st.write("🟢 Activă · ⚪ Disponibilă · 🔴 Blocată · 🔵 Inspectată")
-            st.caption("Ora virtuală este separată de ora calculatorului. Datele sunt sintetice.")
-        st.markdown("#### ROUTE DETAILS")
-        rows = [{"ID": r["id"], "Plecare": r["cities"][0], "Sosire": r["cities"][1],
-                 "Cost": r["cost"], "Beneficiu": r["value"],
-                 "Stare": starea_rutei(r["id"], state.selected_ids, state.blocked_ids)} for r in ROUTES]
-        st.dataframe(rows, width="stretch", hide_index=True)
-
-    with tab_time:
-        st.markdown('<div class="timeline-title">SIMULATION TIMELINE</div>', unsafe_allow_html=True)
-        if engine is None:
-            st.info("Pornește simularea sau creează un incident pentru a activa Timeline.")
-        else:
-            controls = st.columns(4)
-            if controls[0].button("▶ Play / Resume", disabled=engine.running, width="stretch"):
-                engine.resume(time.monotonic())
-                st.rerun()
-            if controls[1].button("Ⅱ Pause", disabled=not engine.running, width="stretch"):
-                engine.pause(time.monotonic())
-                st.rerun()
-            if controls[2].button("↺ Replay", width="stretch"):
-                engine.replay(time.monotonic())
-                st.rerun()
-            if controls[3].button("⟲ Restart", width="stretch"):
-                engine.reset()
-                st.rerun()
-            st.session_state.timeline_position = int(engine.position)
-            st.slider("Timp virtual · secunde de la 08:00", 0, int(engine.duration),
-                      key="timeline_position", on_change=seek_timeline)
-            st.caption(f"Moment: {current_clock} · Viteză: {engine.speed:g}× · "
-                       f"{len(engine.events)} evenimente în jurnal")
-            for event in sorted((e for e in engine.events if e.timestamp <= engine.position),
-                                key=lambda e: e.timestamp, reverse=True)[:10]:
-                style = "event incident" if event.severity == "HIGH" else "event"
-                st.markdown(f'<div class="{style}"><b>{clock(event.timestamp)} · {event.event_id}</b> · '
-                            f'{event.description}</div>', unsafe_allow_html=True)
-            markers = go.Figure(go.Scatter(x=[e.timestamp for e in engine.events],
-                y=[1] * len(engine.events), mode="markers+text", text=[e.event_id for e in engine.events],
-                textposition="top center", marker={"size": 12, "color": ["#EF4444" if e.severity == "HIGH"
-                else "#38BDF8" for e in engine.events]}, hovertext=[e.description for e in engine.events],
-                hoverinfo="text"))
-            markers.add_vline(x=engine.position, line_color="#10B981", line_width=2)
-            markers.update_layout(height=160, margin={"l": 10, "r": 10, "t": 30, "b": 10},
-                paper_bgcolor="#111C2E", plot_bgcolor="#111C2E", font={"color": "#94A3B8"},
-                yaxis={"visible": False}, xaxis={"range": [0, engine.duration], "title": "Secunde simulate"})
-            st.plotly_chart(markers, width="stretch", key="timeline_chart")
-
-    with tab_compare:
-        st.markdown("#### NETWORK COMPARISON")
-        if engine is None:
-            st.info("Pornește simularea pentru comparația Before / After.")
-        else:
-            mode = st.radio("Mod", ["Side by Side", "Snapshot Comparison"], horizontal=True)
-            if mode == "Snapshot Comparison":
-                t1 = st.slider("Moment Before", 0, int(DURATION), 0)
-                t2 = st.slider("Moment After", 0, int(DURATION), int(engine.position))
-                before = state_at_time(engine.initial_state, engine.events, t1)
-                after = state_at_time(engine.initial_state, engine.events, t2)
+    if ROUTES:
+        if search_query.strip():
+            st.caption(f"{len(matching_routes)} din {len(ROUTES)} rute găsite")
+            if matching_routes:
+                show_route_checks(matching_routes)
             else:
-                before, after = engine.initial_state, state
-            comparison = compare_states(ROUTES, before, after)
-            columns = st.columns(2)
-            for column, title, snapshot, summary in (
-                (columns[0], "BEFORE", before, comparison["before"]),
-                (columns[1], "AFTER", after, comparison["after"])):
-                with column:
-                    st.markdown(f"### {title}")
-                    st.caption(f"Cost {summary['cost']:g} · Beneficiu {summary['beneficiu']:g} · "
-                               f"{summary['numar_active']} active · "
-                               f"{'Valid' if summary['valid'] else 'Buget depășit'}")
-                    snapshot_fig = deseneaza_harta(ROUTES, snapshot.selected_ids, snapshot.blocked_ids,
-                        POSITIONS, fundal_online=use_tiles, arata_nealese=show_unselected,
-                        reduced_motion=st.session_state.reduced_motion, height=420)
-                    st.plotly_chart(snapshot_fig, width="stretch", key=f"comparison_{title}",
-                                    config={"scrollZoom": True, "displaylogo": False})
-            cards = st.columns(4)
-            for column, label, value in zip(cards,
-                ("Δ Cost", "Δ Beneficiu", "Rute adăugate", "Rute eliminate / blocate"),
-                (f"{comparison['cost_delta']:+g}", f"{comparison['benefit_delta']:+g}",
-                 len(comparison["added_ids"]), len(comparison["removed_ids"]))):
-                column.metric(label, value)
-            st.caption(f"Adăugate: {comparison['added_ids'] or 'niciuna'} · "
-                       f"Eliminate: {comparison['removed_ids'] or 'niciuna'} · "
-                       f"Blocaje noi: {comparison['new_blocked_ids'] or 'niciunul'}")
+                st.info("Nu am găsit nicio rută. Încearcă alt oraș sau alt nume.")
+        else:
+            national_tab, international_tab = st.tabs(["Naționale", "Internaționale"])
+            with national_tab:
+                st.caption(f"{len(national_routes)} rute · cost și punctaj")
+                show_route_checks(national_routes)
+            with international_tab:
+                st.caption(f"{len(international_routes)} rute · cost total cu frontieră")
+                show_route_checks(international_routes)
+    else:
+        st.info("Nu există rute în catalogul curent.")
 
-    with tab_qaoa:
-        result = qaoa_results()
-        st.markdown("#### QAOA INSIGHTS")
-        st.write(f"**Plan fezabil observat în experimentul salvat:** {qaoa_recommendation()}")
-        st.write(f"**Baseline:** buget {result['budget']} · penalizare {result['penalty']} · "
-                 f"adâncime {result['local_training']['depth']}")
-        st.write(f"**Măsurări ideale:** {sum(result['ideal_counts'].values())} · "
-                 f"rata planurilor fezabile {result['metrics']['Ideal']['feasible_rate']:.1%}")
-        if state.budget != DEFAULT_BUDGET or state.blocked_ids:
-            st.warning("Rezultatul QAOA aparține configurației baseline. Nu reprezintă un optim "
-                       "recalculat pentru bugetul sau blocajele curente.")
-        st.caption("Maparea x0…x4 folosește ID-urile 0, 1, 2, 6, 8; într-un șir Qiskit x0 este la dreapta.")
+    st.info(
+        "Bifarea unei rute o face disponibilă pentru analiză. Nu înseamnă că ruta "
+        "va fi construită. Algoritmul va decide ulterior ce combinație respectă bugetul."
+    )
 
-    with st.expander("Incident Log și export"):
-        if engine:
-            st.dataframe([{"Ora": clock(e.timestamp), "ID": e.event_id, "Tip": e.event_type,
-                           "Rută": e.route_id, "Severitate": e.severity, "Descriere": e.description}
-                          for e in engine.events if e.timestamp <= engine.position],
-                         width="stretch", hide_index=True)
-        if st.button("Pregătește exportul stării curente"):
-            st.session_state.export_html = figure.to_html(full_html=True, include_plotlyjs=True)
-            st.session_state.export_label = current_clock
-            buffer = io.StringIO()
-            writer = csv.writer(buffer)
-            writer.writerow(["ID", "Plecare", "Sosire", "Cost", "Beneficiu"])
-            for route in ROUTES:
-                if route["id"] in plan["active_ids"]:
-                    writer.writerow([route["id"], *route["cities"], route["cost"], route["value"]])
-            st.session_state.export_csv = "\ufeff" + buffer.getvalue()
-        if "export_html" in st.session_state:
-            st.caption(f"Export pregătit pentru ora virtuală {st.session_state.export_label}.")
-            st.download_button("Descarcă harta HTML", st.session_state.export_html,
-                               file_name="quantum_railways_map.html", mime="text/html")
-            st.download_button("Descarcă planul CSV", st.session_state.export_csv,
-                               file_name="quantum_railways_plan.csv", mime="text/csv")
+# Rutele bifate definesc intrarea algoritmilor, nu un plan deja construit.
+available_routes = [
+    route for route in ROUTES if st.session_state.get(f"selected_route_{route['id']}", False)
+]
+available_international = sum(route["international"] for route in available_routes)
 
+st.markdown(
+    f"""
+    <div class="qr-hero">
+      <div class="qr-hero-copy">
+        <span class="qr-kicker">Q-FORCE / RAILWAY INTELLIGENCE</span>
+        <h1>Quantum Railways</h1>
+        <strong class="qr-tagline">Planifică. Optimizează. Conectează.</strong>
+        <p>Alege bugetul și rutele disponibile pentru un viitor plan de investiții feroviare.</p>
+      </div>
+      <div class="qr-hero-facts" aria-label="Datele rețelei">
+        <div><strong>{len(ROUTES)}</strong><span>rute</span></div>
+        <div><strong>{len(POSITIONS)}</strong><span>orașe</span></div>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-control_center()
+st.markdown('<div class="qr-section-label">01 / SCENARIU</div>', unsafe_allow_html=True)
+st.subheader("Privire de ansamblu")
+st.markdown(
+    f"""
+    <section class="qr-kpi-grid" aria-label="Indicatorii scenariului">
+      <article class="qr-kpi"><span class="qr-kpi-icon">◎</span>
+        <span class="qr-kpi-label">Buget disponibil</span>
+        <strong>{budget}</strong><small>unități fictive</small></article>
+      <article class="qr-kpi"><span class="qr-kpi-icon">✓</span>
+        <span class="qr-kpi-label">Rute eligibile</span>
+        <strong>{len(available_routes)}</strong><small>disponibile pentru analiză</small></article>
+      <article class="qr-kpi"><span class="qr-kpi-icon">◇</span>
+        <span class="qr-kpi-label">Total rute</span>
+        <strong>{len(ROUTES)}</strong><small>în catalogul complet</small></article>
+      <article class="qr-kpi"><span class="qr-kpi-icon">⌖</span>
+        <span class="qr-kpi-label">Orașe conectate</span>
+        <strong>{len(POSITIONS)}</strong><small>în datele laboratorului</small></article>
+    </section>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown('<div class="qr-section-label">02 / EXPLORARE</div>', unsafe_allow_html=True)
+st.subheader("Explorerul de rute")
+st.caption(
+    f"{len(available_routes)} rute eligibile · "
+    f"{len(available_routes) - available_international} naționale · "
+    f"{available_international} internaționale"
+)
+
+table_tab, chart_tab = st.tabs(["📋 Tabelul rutelor", "📈 Cost și punctaj"])
+with table_tab:
+    if available_routes:
+        st.dataframe(
+            route_rows(available_routes),
+            hide_index=True,
+            width="stretch",
+            height=350,
+            column_config={
+                "ID": st.column_config.NumberColumn("ID", format="%d", width=55),
+                "Rută": st.column_config.TextColumn("Rută", width=175),
+                "Cost": st.column_config.NumberColumn("Cost", format="%d", width=70),
+                "Puncte": st.column_config.NumberColumn("Puncte", format="%d", width=75),
+                "Tip": st.column_config.TextColumn("Tip", width="medium"),
+                "Cost frontieră": st.column_config.NumberColumn("Frontieră", format="%d", width="small"),
+            },
+        )
+        st.caption(
+            "Costul internațional include frontiera. Pe ecrane înguste, glisează "
+            "tabelul pentru a vedea și celelalte coloane."
+        )
+    else:
+        st.info("Nu există rute eligibile. Bifează o rută în bara laterală pentru a o analiza.")
+
+with chart_tab:
+    if available_routes:
+        st.altair_chart(cost_value_chart(available_routes), width="stretch")
+        st.caption(
+            "Graficul compară rutele individuale. Nu reprezintă soluția optimă "
+            "și nu indică rutele construite. Punctele cu cost și punctaj identice "
+            "sunt deplasate puțin doar pentru vizibilitate; tooltipul arată valorile reale."
+        )
+    else:
+        st.info("Selectează cel puțin o rută pentru a vedea graficul cost–punctaj.")
+
+with st.expander("Vezi toate rutele din catalog"):
+    if ROUTES:
+        st.dataframe(route_rows(ROUTES), hide_index=True, width="stretch")
+    else:
+        st.info("Catalogul este gol.")
+
+st.markdown('<div class="qr-section-label">03 / REȚEA</div>', unsafe_allow_html=True)
+st.subheader("Railway Network Map")
+render_map_panel(deseneaza_harta(available_routes, [], [], POSITIONS, fundal_online=False))
+
+st.markdown('<div class="qr-section-label">04 / ANALIZĂ</div>', unsafe_allow_html=True)
+st.subheader("Optimization Center")
+with st.container(border=True):
+    action_copy, action_button = st.columns([2.2, 1], gap="medium", vertical_alignment="center")
+    with action_copy:
+        st.markdown("#### Scenariul tău este gata de pregătire")
+        st.caption("Algoritmii clasic și QAOA vor primi rutele eligibile și bugetul după integrare.")
+    with action_button:
+        prepare_clicked = st.button(
+            "Pregătește scenariul",
+            key="prepare_scenario",
+            type="primary",
+            width="stretch",
+            disabled=not available_routes,
+        )
+
+if prepare_clicked:
+    st.info(
+        f"Scenariu pregătit: {len(available_routes)} rute eligibile, buget {budget}. "
+        "Modulul de optimizare este în curs de dezvoltare."
+    )
+
+st.markdown("#### Rezultatul planului")
+st.caption("Valorile de mai jos vor apărea numai după executarea unui algoritm conectat.")
+st.markdown(
+    """
+    <div class="qr-result-grid">
+      <div><span>Cost total recomandat</span><strong>—</strong></div>
+      <div><span>Punctaj obținut</span><strong>—</strong></div>
+      <div><span>Starea bugetului</span><strong class="qr-result-pending">În așteptare</strong></div>
+    </div>
+    <div class="qr-result-routes"><strong>Rute recomandate</strong>
+      <p>Nicio recomandare încă. Bifarea indică doar eligibilitatea rutelor.</p></div>
+    """,
+    unsafe_allow_html=True,
+)
+
+with st.container(border=True):
+    st.markdown("#### Classical vs Quantum Optimization")
+    st.caption("Comparația dintre soluția clasică și QAOA va apărea după integrarea modulelor.")
+    st.markdown('<span class="qr-status">MODUL ÎN CURS DE DEZVOLTARE</span>', unsafe_allow_html=True)
+
+st.markdown(
+    '<div class="qr-footer">Q-FORCE <span>·</span> QUANTUM RAILWAYS '
+    '<span>·</span> DATE FICTIVE PENTRU DEMONSTRAȚIE</div>',
+    unsafe_allow_html=True,
+)
