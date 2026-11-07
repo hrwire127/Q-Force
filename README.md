@@ -99,3 +99,87 @@ Main was not modified. Conflicting app implementations became connected pages;
 styles and interactions remain. Baseline notebook is archived under
 `validation/baseline_notebook.ipynb`; the main notebook retains zus's extended
 experiments. Dependencies combine both UI branches; PDF uses existing Matplotlib.
+
+## Geographic map and simulated incidents
+
+The feature branch `feature/railway-incidents-real-map` extends the existing
+application; no new merge is needed. `zus` remains at its validated merge commit.
+
+The map now defaults to a real CARTO/OSM basemap centered on Romania, using the
+existing Plotly MapLibre technology. Pan/zoom can navigate worldwide and Streamlit
+provides fullscreen. Click city markers, connection points, or incident markers
+to populate a linked details panel. City coordinates are real; all optimization
+connections, construction costs, scores and incidents are fictional. There is no
+real railway-track geometry layer, and straight segments never claim to be real
+tracks. Online tiles require internet; the toggle offers an explicitly schematic
+offline view. Reports use static schematic maps and never download basemap tiles.
+
+Attribution: [OpenStreetMap contributors](https://www.openstreetmap.org/copyright)
+and [CARTO](https://carto.com/attribution/). See the official
+[Plotly tile layer documentation](https://plotly.com/python/tile-map-layers/) and
+[Streamlit selection API](https://docs.streamlit.io/develop/api-reference/charts/st.plotly_chart).
+
+`railway_incidents.py` defines immutable validated `Incident` records. Supported
+types are closure, maintenance, technical malfunction, weather, reduced capacity,
+delay, and increased operating cost. Severity is LOW/MEDIUM/HIGH/CRITICAL. All
+sources are **simulated**; no verified external incident feed is implemented.
+Start/end times are integer scenario-relative minutes, not real-world timestamps.
+End time is exclusive. Change the scenario-time control to inspect scheduled
+incidents. Overlapping closures remain effective until all relevant closures or
+maintenance incidents are resolved, removed or expired.
+
+Effects are explicit:
+
+- Closure and maintenance remove a connection from the available MultiGraph and
+  both optimization search spaces. Original network records remain intact.
+- Delay minutes, capacity percentage and `cost_delta` (operating cost) are metadata
+  only. They do not silently alter the construction objective or route reward.
+- `construction_cost_delta` is a separately labeled optional construction-cost
+  surcharge. It changes classical totals, QUBO coefficients, Ising, QAOA training
+  and reports consistently. Concurrent surcharges/delays add; capacity uses the
+  lowest remaining percentage. Severity itself never implies hidden numerical effects.
+
+The incident panel supports create, edit, resolve, remove, block/unblock, reset,
+and reproducible random scenarios. Random generation replaces the incident list
+intentionally; resetting incidents preserves saved experiments. Incidents for
+temporarily deselected routes stay in session state but do not affect the current
+selected network. Active incidents and availability update on each rerun.
+
+Graph analysis retains cities as isolated nodes when every adjacent connection is
+closed. Reachability and alternative paths use only available edges. Displayed
+paths minimize summed construction cost, not travel time; no direct edge is invented.
+
+Closed decisions are removed exactly before rebuilding classical enumeration,
+QUBO/Ising and QAOA. `decision_map.active_ids` and `decision_map.original_ids`
+retain identity; every displayed sampled plan includes `full_bits` with zeros for
+closed decisions in original input order. When all routes close, one empty plan
+is evaluated deterministically and no zero-qubit circuit or shots are executed.
+
+### Before/after workflow
+
+1. Select the default five routes and run **Rulează simularea**, or explicitly
+   **Rulează baseline fără incidente**. The baseline snapshot is saved separately.
+2. Select `#1 Iași — Cluj-Napoca` under **Conexiune afectată** and click
+   **Blochează conexiunea**. Red overrides selected-blue when a conflict exists.
+3. Run **Rulează simularea** again. Both algorithms use the four available
+   decisions. Compare available routes, feasible plans, exact scores/costs,
+   QUBO energy, QAOA probabilities and connected components in Before / After.
+4. Inspect the result map and measurement table. Each optimum probability is
+   relative to that snapshot's own feasible optimum, including ties. Energy
+   differences across changed decision spaces are not interpreted as advantages.
+5. Generate/download HTML and PDF reports. They freeze incident records, blocked
+   IDs, decision mapping, statistics and baseline comparison at execution time.
+6. **Deblochează conexiunea** or reset incidents, then rerun to restore baseline.
+   Earlier runs remain available via the archived snapshot selector, map and exports.
+
+Session persistence lasts for the current Streamlit session (refresh/new browser
+sessions can reset it). Snapshots are kept in memory, not a database. Simulations
+are synchronous with visible running/completed/failed states and bounded resources.
+The legacy Live Network page and its synthetic timeline remain available; the main
+page's incident experiment controls are the ones that rebuild the optimization model.
+
+New tests in `tests/test_incidents.py` cover closures/restoration, times, severity,
+all seven types, seeded random generation, paths/no paths, disconnected graphs,
+cost semantics, QUBO/Ising equivalence after removal, QAOA original-bit mapping,
+all-routes-closed handling, map colors/click details, frozen reports and the full
+Streamlit baseline/block/run/export/unblock workflow.

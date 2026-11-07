@@ -387,7 +387,14 @@ with st.expander("Vezi toate rutele din catalog"):
 
 st.markdown('<div class="qr-section-label">03 / REȚEA</div>', unsafe_allow_html=True)
 st.subheader("Railway Network Map")
-render_map_panel(deseneaza_harta(available_routes, [], [], POSITIONS, fundal_online=False))
+from incident_ui import render_incidents, render_geography
+incident_state = render_incidents(available_routes, ROUTES)
+previous_ids = []
+if 'experiment_json' in st.session_state:
+    import json
+    previous_ids = json.loads(st.session_state.experiment_json)['classical']['ids_rute']
+    st.caption('Suprapunere: ultima soluție clasică calculată; o rută acum blocată rămâne roșie. Rulează din nou pentru optimul scenariului curent.')
+render_geography(incident_state, ROUTES, previous_ids)
 
 from experiment_ui import render_experiment
-render_experiment(available_routes, budget)
+render_experiment(available_routes, budget, incident_state)
