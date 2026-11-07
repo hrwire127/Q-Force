@@ -1,8 +1,28 @@
-# Quantum Railways — Network Explorer
+# Q-FORCE | Quantum Railways 2.0 — Live Control Center
 
 Dashboard interactiv pentru rețeaua **fictivă** din `Quantum_Railways_Labb.ipynb`.
 Orașele au coordonate geografice, însă conexiunile sunt segmente schematice,
 iar costurile și beneficiile sunt date didactice.
+
+## Demonstrația live
+
+Pagina pornește cu planul fezabil observat în măsurările QAOA salvate. Butonul
+**START LIVE SIMULATION** capturează un snapshot independent al selecției și
+pornește ceasul virtual. Evenimentele programate sunt determinate de seed:
+rețea operațională la 08:03, blocaj la 08:05, recalculare la 08:07,
+restabilire la 08:10 și încheiere la 08:12. Viteza poate fi 0.5×, 1×, 2× sau 5×.
+
+Tabul **TIMELINE & REPLAY** permite Pause, Resume, Replay, Restart și navigarea
+cu sliderul. Evenimentele sunt păstrate în jurnal, iar starea este reconstruită
+din snapshotul inițial la timpul ales. **SIMULATE EMERGENCY** și **RESTORE ROUTE**
+adaugă evenimente în sesiunea curentă. Tabul **BEFORE / AFTER** compară snapshotul
+inițial cu starea curentă sau două momente alese din Timeline. Blocarea unei rute
+nu modifică automat selecția recomandată și nu rulează QAOA din nou.
+
+Actualizarea automată folosește `st.fragment(run_every="1s")`, fără bucle de
+refresh. Fiecare sesiune Streamlit are propria stare. Fundalul online poate fi
+dezactivat pentru folosire fără tile-uri externe. **Reduced Motion** reduce
+efectele luminoase și oprește animația indicatorului LIVE.
 
 ## Pornire
 
@@ -26,9 +46,12 @@ tile-urile online; harta și hoverul rămân disponibile fără token API.
   ID-uri și ordinea celor 5 decizii QAOA.
 - `railway_map.py` — validare, graf `networkx.MultiGraph`, calcule de plan și
   figură Plotly importabilă independent de Streamlit.
+- `railway_simulation.py` — evenimente, ceas virtual, Replay și reconstrucția pură
+  a stării la un moment ales.
+- `railway_scenarios.py` — incidente și comparații de plan Before / After.
 - `app.py` — dashboard, controale, scenarii și export HTML/CSV.
 - `railway_results.json` — măsurările salvate ale experimentului existent.
-- `tests/test_railway_map.py` — teste de integrare pentru date, calcule și hartă.
+- `tests/` — teste pentru date, hartă, simulare și comparații.
 
 ## Integrarea QAOA
 

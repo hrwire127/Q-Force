@@ -77,7 +77,8 @@ def test_figura_culori_hover_si_prioritate():
     assert isinstance(figure, go.Figure)
     assert figure.layout.uirevision == "romania-retea"
     assert starea_rutei(6, [6], [6]) == "blocată"
-    assert figure.data[0].line.color == COLORS["selectată"]
+    assert any(getattr(trace.line, "color", None) == COLORS["selectată"]
+               for trace in figure.data if hasattr(trace, "line"))
     blocked = [trace for trace in figure.data if "Ruta 6" in (trace.hovertemplate or "")]
     assert blocked[0].line.color == COLORS["blocată"]
     assert "Beneficiu" in blocked[0].hovertemplate

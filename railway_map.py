@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 
 from railway_data import POSITIONS
 
-COLORS = {"selectată": "#10B981", "nealeasă": "#94A3B8", "blocată": "#EF4444"}
+COLORS = {"selectată": "#10B981", "nealeasă": "#64748B", "blocată": "#EF4444"}
 
 
 def valideaza_date(rute: Sequence[Mapping], pozitii: Mapping | None = None) -> None:
@@ -116,10 +116,12 @@ def recomandare_din_masuratori(counts: Mapping[str, int], rute, decision_route_i
 
 
 def deseneaza_harta(rute, rute_alese=None, rute_blocate=None, pozitii=None,
-                    *, fundal_online=True, arata_nealese=True) -> go.Figure:
+                    *, fundal_online=True, arata_nealese=True, incidente=None,
+                    ruta_inspectata=None, reduced_motion=False, height=610) -> go.Figure:
     """Construiește harta; coordonatele liniilor sunt segmente schematice."""
     pozitii = POSITIONS if pozitii is None else pozitii
-    graf = construieste_graf(rute, pozitii, rute_alese, rute_blocate)
+    valideaza_date(rute, pozitii)
+    incidente = incidente or {}
     fig = go.Figure()
     seen = set()
     for ruta in rute:
@@ -129,16 +131,35 @@ def deseneaza_harta(rute, rute_alese=None, rute_blocate=None, pozitii=None,
         start, end = ruta["cities"]
         lon1, lat1 = pozitii[start]
         lon2, lat2 = pozitii[end]
-        color = COLORS[status]
+        color = "#38BDF8" if ruta["id"] == ruta_inspectata and status != "blocată" else COLORS[status]
+        incident = incidente.get(ruta["id"])
         hover = (f"<b>Ruta {ruta['id']} — {start} → {end}</b><br>"
                  f"Cost: {ruta['cost']} unități<br>Beneficiu: {ruta['value']} puncte<br>"
-                 f"Stare: {status.capitalize()}<extra></extra>")
-        fig.add_trace(go.Scattermap(
-            lon=[lon1, lon2], lat=[lat1, lat2], mode="lines",
-            line={"color": color, "width": 5 if status != "nealeasă" else 2.5},
-            name=status.capitalize(), legendgroup=status, showlegend=status not in seen,
-            hovertemplate=hover,
-        ))
+                 f"Stare: {status.capitalize()}"
+                 + (f"<br>Incident: {incident.event_id}<br>Severitate: {incident.severity}" if incident else "")
+                 + "<extra></extra>")
+        if status == "selectată" or ruta["id"] == ruta_inspectata:
+            fig.add_trace(go.Scattermap(
+                lon=[lon1, lon2], lat=[lat1, lat2], mode="lines",
+                line={"color": "rgba(16,185,129,0.28)" if status == "selectată" else "rgba(56,189,248,0.28)",
+                      "width": 13 if not reduced_motion else 9},
+                showlegend=False, hoverinfo="skip"))
+        if status == "blocată":
+            # Scattermap nu acceptă dash; segmentele alternante simulează întreruperile.
+            for i in range(7):
+                a, b = i / 7, min((i + 0.68) / 7, 1)
+                fig.add_trace(go.Scattermap(
+                    lon=[lon1 + (lon2 - lon1) * a, lon1 + (lon2 - lon1) * b],
+                    lat=[lat1 + (lat2 - lat1) * a, lat1 + (lat2 - lat1) * b],
+                    mode="lines", line={"color": color, "width": 5},
+                    name=status.capitalize(), legendgroup=status,
+                    showlegend=status not in seen and i == 0, hovertemplate=hover))
+        else:
+            fig.add_trace(go.Scattermap(
+                lon=[lon1, lon2], lat=[lat1, lat2], mode="lines",
+                line={"color": color, "width": 5 if status == "selectată" else 2.5},
+                name=status.capitalize(), legendgroup=status, showlegend=status not in seen,
+                hovertemplate=hover))
         seen.add(status)
         # O zonă de hover mai mare face și liniile subțiri ușor de inspectat.
         fractions = (0.2, 0.35, 0.5, 0.65, 0.8)
@@ -155,11 +176,11 @@ def deseneaza_harta(rute, rute_alese=None, rute_blocate=None, pozitii=None,
                 showlegend=False, hovertemplate=hover,
             ))
     fig.add_trace(go.Scattermap(
-        lon=[graf.nodes[city]["lon"] for city in graf.nodes],
-        lat=[graf.nodes[city]["lat"] for city in graf.nodes],
-        text=list(graf.nodes), mode="markers+text", textposition="top center",
+        lon=[pos[0] for pos in pozitii.values()],
+        lat=[pos[1] for pos in pozitii.values()],
+        text=list(pozitii), mode="markers+text", textposition="top center",
         textfont={"color": "#F8FAFC" if fundal_online else "#10243B", "size": 12},
-        marker={"size": 10, "color": "#2DD4BF"}, name="Orașe",
+        marker={"size": 11, "color": "#38BDF8"}, name="Orașe",
         hovertemplate="<b>%{text}</b><extra></extra>",
     ))
     lons = [pos[0] for pos in pozitii.values()]
@@ -169,9 +190,10 @@ def deseneaza_harta(rute, rute_alese=None, rute_blocate=None, pozitii=None,
     fig.update_layout(
         map={"style": "carto-darkmatter" if fundal_online else "white-bg",
              "center": {"lon": (min(lons) + max(lons)) / 2,
-                        "lat": (min(lats) + max(lats)) / 2}, "zoom": zoom},
-        uirevision="romania-retea", height=610, margin={"l": 0, "r": 0, "t": 8, "b": 0},
-        paper_bgcolor="#0B1730", plot_bgcolor="#0B1730",
+                        "lat": (min(lats) + max(lats)) / 2}, "zoom": zoom,
+             "uirevision": "romania-retea"},
+        uirevision="romania-retea", height=height, margin={"l": 0, "r": 0, "t": 8, "b": 0},
+        paper_bgcolor="#0B1220", plot_bgcolor="#0B1220",
         font={"color": "#E2E8F0"},
         legend={"orientation": "h", "y": 0.02, "x": 0.02,
                 "bgcolor": "rgba(11,23,48,.82)"},
