@@ -34,7 +34,7 @@ def plan_probability_histogram(result,backend='ideal',classical=False,limit=64):
 def outcome_histogram(result,backend='ideal',classical=False):
     """Disjoint outcome categories; classical counts are states, quantum counts are shots."""
     if classical:
-        optimal=len(result['classical_optima'])
+        optimal=result.get('classical_optimal_plan_count',len(result['classical_optima']))
         valid=result['feasible_plan_count']
         counts=[optimal,valid-optimal,result['plan_count']-valid]
     else:

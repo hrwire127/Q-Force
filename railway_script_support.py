@@ -126,7 +126,10 @@ def connect_ibm(args):
         if backend.num_qubits < 19 or not backend.status().operational:
             raise ValueError
         return service, backend
-    except Exception:
+    except Exception as error:
+        if 'does not have access to the instance' in str(error):
+            raise RuntimeError('Cheia API IBM nu are acces la CRN-ul configurat. '
+                               'Foloseste cheia si CRN-ul aceleiasi instante. Niciun job nu a fost trimis.') from None
         raise RuntimeError('Conectarea IBM a esuat. Verifica cheia, CRN-ul si accesul la backend. Niciun job nu a fost trimis.') from None
     finally:
         token = None

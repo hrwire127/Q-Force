@@ -1,0 +1,1466 @@
+[
+  {
+    "shots": 256,
+    "sampling_seed": 2026,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "00110": 7,
+      "10111": 9,
+      "01100": 5,
+      "00011": 8,
+      "11010": 7,
+      "10001": 7,
+      "11001": 10,
+      "11100": 15,
+      "10101": 7,
+      "01011": 14,
+      "00000": 8,
+      "00100": 11,
+      "11000": 8,
+      "00111": 11,
+      "01001": 7,
+      "11111": 5,
+      "01111": 9,
+      "00001": 8,
+      "10100": 9,
+      "01010": 8,
+      "00101": 8,
+      "10110": 11,
+      "10000": 9,
+      "01110": 12,
+      "01000": 5,
+      "11110": 8,
+      "10011": 3,
+      "11101": 6,
+      "00010": 8,
+      "10010": 4,
+      "01101": 4,
+      "11011": 5
+    },
+    "p_feasible": 0.48046875,
+    "p_feasible_wilson95": [
+      0.42000768037908615,
+      0.5415073349225438
+    ],
+    "p_optimal_feasible": 0.07421875,
+    "p_optimal_feasible_wilson95": [
+      0.048025724882263164,
+      0.11300160869326903
+    ],
+    "p_model_minimum": 0.015625,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 11,
+      "probability": 0.04296875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2026,
+      "seed_transpiler": 2026
+    }
+  },
+  {
+    "shots": 256,
+    "sampling_seed": 2027,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "01101": 11,
+      "11110": 10,
+      "11010": 7,
+      "01011": 7,
+      "11000": 6,
+      "01001": 9,
+      "01110": 8,
+      "10111": 9,
+      "11011": 10,
+      "10010": 6,
+      "00001": 11,
+      "11001": 10,
+      "00101": 15,
+      "10000": 5,
+      "10001": 9,
+      "00100": 10,
+      "11101": 3,
+      "01111": 10,
+      "11111": 10,
+      "10011": 7,
+      "10101": 9,
+      "00010": 6,
+      "00011": 6,
+      "10110": 6,
+      "01010": 6,
+      "10100": 8,
+      "01100": 7,
+      "00111": 5,
+      "00000": 3,
+      "11100": 9,
+      "00110": 9,
+      "01000": 9
+    },
+    "p_feasible": 0.484375,
+    "p_feasible_wilson95": [
+      0.4238397175749127,
+      0.5453722946663914
+    ],
+    "p_optimal_feasible": 0.04296875,
+    "p_optimal_feasible_wilson95": [
+      0.024159562780836398,
+      0.07529179527730365
+    ],
+    "p_model_minimum": 0.04296875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 5,
+      "probability": 0.01953125
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2027,
+      "seed_transpiler": 2027
+    }
+  },
+  {
+    "shots": 256,
+    "sampling_seed": 2028,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "01110": 9,
+      "00111": 10,
+      "10110": 17,
+      "00001": 7,
+      "00100": 9,
+      "01111": 8,
+      "00110": 11,
+      "11011": 12,
+      "10001": 7,
+      "00010": 6,
+      "01000": 8,
+      "10100": 8,
+      "01001": 7,
+      "00101": 6,
+      "11010": 5,
+      "01011": 7,
+      "10010": 9,
+      "11101": 5,
+      "11111": 6,
+      "11001": 10,
+      "11000": 14,
+      "10111": 7,
+      "11100": 10,
+      "01010": 11,
+      "10000": 9,
+      "10101": 8,
+      "01100": 4,
+      "00000": 8,
+      "11110": 5,
+      "00011": 6,
+      "10011": 3,
+      "01101": 4
+    },
+    "p_feasible": 0.4921875,
+    "p_feasible_wilson95": [
+      0.4315147730833839,
+      0.5530912330372681
+    ],
+    "p_optimal_feasible": 0.08203125,
+    "p_optimal_feasible_wilson95": [
+      0.054277180955178764,
+      0.12214414649970147
+    ],
+    "p_model_minimum": 0.015625,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 10,
+      "probability": 0.0390625
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2028,
+      "seed_transpiler": 2028
+    }
+  },
+  {
+    "shots": 1024,
+    "sampling_seed": 2026,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "01101": 29,
+      "00100": 30,
+      "10101": 27,
+      "11010": 29,
+      "10001": 27,
+      "00000": 32,
+      "10000": 42,
+      "10011": 31,
+      "01100": 41,
+      "00111": 44,
+      "00101": 31,
+      "00001": 35,
+      "11111": 27,
+      "00010": 33,
+      "01001": 24,
+      "00011": 38,
+      "01011": 33,
+      "10010": 35,
+      "10100": 31,
+      "01000": 32,
+      "11001": 29,
+      "11101": 32,
+      "01110": 34,
+      "10111": 26,
+      "11110": 33,
+      "10110": 30,
+      "01010": 36,
+      "11100": 40,
+      "11011": 35,
+      "11000": 26,
+      "01111": 30,
+      "00110": 22
+    },
+    "p_feasible": 0.5205078125,
+    "p_feasible_wilson95": [
+      0.4898890747773058,
+      0.5509732526474648
+    ],
+    "p_optimal_feasible": 0.078125,
+    "p_optimal_feasible_wilson95": [
+      0.06321937651418469,
+      0.09618417360482198
+    ],
+    "p_model_minimum": 0.0283203125,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 44,
+      "probability": 0.04296875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2026,
+      "seed_transpiler": 2026
+    }
+  },
+  {
+    "shots": 1024,
+    "sampling_seed": 2027,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "11000": 24,
+      "01001": 27,
+      "11011": 38,
+      "01000": 27,
+      "10001": 39,
+      "00000": 28,
+      "11110": 37,
+      "10011": 35,
+      "00101": 40,
+      "01100": 29,
+      "11100": 36,
+      "01010": 26,
+      "10100": 33,
+      "00111": 27,
+      "10010": 26,
+      "00001": 37,
+      "00011": 28,
+      "00110": 35,
+      "11010": 23,
+      "01101": 40,
+      "11001": 41,
+      "11101": 27,
+      "01111": 33,
+      "00100": 31,
+      "10110": 25,
+      "10000": 32,
+      "01110": 32,
+      "10111": 34,
+      "01011": 36,
+      "10101": 39,
+      "00010": 24,
+      "11111": 35
+    },
+    "p_feasible": 0.4775390625,
+    "p_feasible_wilson95": [
+      0.44708603846777656,
+      0.5081599838765224
+    ],
+    "p_optimal_feasible": 0.0517578125,
+    "p_optimal_feasible_wilson95": [
+      0.03978611220267115,
+      0.06708015979877344
+    ],
+    "p_model_minimum": 0.0390625,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 27,
+      "probability": 0.0263671875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2027,
+      "seed_transpiler": 2027
+    }
+  },
+  {
+    "shots": 1024,
+    "sampling_seed": 2028,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "11110": 33,
+      "10101": 27,
+      "00100": 34,
+      "00011": 42,
+      "10001": 37,
+      "11010": 29,
+      "00111": 35,
+      "10111": 35,
+      "10000": 39,
+      "00000": 25,
+      "00110": 35,
+      "11001": 30,
+      "11011": 39,
+      "00101": 31,
+      "11000": 36,
+      "00001": 35,
+      "10100": 30,
+      "01010": 32,
+      "01000": 28,
+      "10010": 27,
+      "10110": 46,
+      "01011": 30,
+      "11100": 38,
+      "01100": 26,
+      "10011": 25,
+      "01110": 35,
+      "11101": 29,
+      "00010": 23,
+      "11111": 25,
+      "01001": 27,
+      "01101": 27,
+      "01111": 34
+    },
+    "p_feasible": 0.494140625,
+    "p_feasible_wilson95": [
+      0.46359690046958973,
+      0.5247281488376186
+    ],
+    "p_optimal_feasible": 0.0654296875,
+    "p_optimal_feasible_wilson95": [
+      0.05184918690094011,
+      0.08225863671701814
+    ],
+    "p_model_minimum": 0.0263671875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 35,
+      "probability": 0.0341796875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2028,
+      "seed_transpiler": 2028
+    }
+  },
+  {
+    "shots": 2048,
+    "sampling_seed": 2026,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "01011": 64,
+      "10101": 52,
+      "00110": 60,
+      "10111": 61,
+      "00011": 71,
+      "00000": 73,
+      "11111": 57,
+      "01001": 61,
+      "00111": 79,
+      "11010": 57,
+      "11011": 69,
+      "01101": 60,
+      "10000": 73,
+      "10011": 63,
+      "01000": 58,
+      "11100": 65,
+      "10100": 70,
+      "00100": 62,
+      "10001": 56,
+      "00010": 65,
+      "00101": 62,
+      "01100": 80,
+      "11000": 59,
+      "11001": 62,
+      "01111": 67,
+      "01010": 73,
+      "11101": 58,
+      "10110": 58,
+      "11110": 60,
+      "10010": 73,
+      "01110": 60,
+      "00001": 60
+    },
+    "p_feasible": 0.525390625,
+    "p_feasible_wilson95": [
+      0.5037360843737717,
+      0.5469500894517321
+    ],
+    "p_optimal_feasible": 0.07421875,
+    "p_optimal_feasible_wilson95": [
+      0.06364580286760325,
+      0.08638605144317783
+    ],
+    "p_model_minimum": 0.029296875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 79,
+      "probability": 0.03857421875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2026,
+      "seed_transpiler": 2026
+    }
+  },
+  {
+    "shots": 2048,
+    "sampling_seed": 2027,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "11100": 72,
+      "01100": 55,
+      "10010": 57,
+      "11010": 61,
+      "00000": 67,
+      "01000": 61,
+      "10001": 69,
+      "11101": 61,
+      "10100": 60,
+      "01001": 56,
+      "00101": 82,
+      "01010": 56,
+      "10011": 70,
+      "10111": 52,
+      "10101": 65,
+      "11110": 67,
+      "11011": 78,
+      "01011": 63,
+      "00010": 59,
+      "01110": 56,
+      "10110": 69,
+      "11000": 55,
+      "00001": 69,
+      "00110": 63,
+      "01101": 79,
+      "00011": 57,
+      "01111": 71,
+      "00100": 56,
+      "10000": 63,
+      "11111": 57,
+      "00111": 65,
+      "11001": 77
+    },
+    "p_feasible": 0.48583984375,
+    "p_feasible_wilson95": [
+      0.464240153334956,
+      0.5074925574162051
+    ],
+    "p_optimal_feasible": 0.05908203125,
+    "p_optimal_feasible_wilson95": [
+      0.04967214681987323,
+      0.07014295001801132
+    ],
+    "p_model_minimum": 0.03857421875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 65,
+      "probability": 0.03173828125
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2027,
+      "seed_transpiler": 2027
+    }
+  },
+  {
+    "shots": 2048,
+    "sampling_seed": 2028,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "11001": 58,
+      "11110": 74,
+      "10101": 61,
+      "01101": 63,
+      "11111": 63,
+      "10110": 70,
+      "10011": 62,
+      "01001": 64,
+      "10010": 62,
+      "11101": 50,
+      "00110": 69,
+      "01100": 63,
+      "00010": 65,
+      "00011": 77,
+      "00000": 58,
+      "11011": 67,
+      "11000": 63,
+      "11010": 53,
+      "10111": 65,
+      "01000": 63,
+      "10001": 63,
+      "00001": 62,
+      "01011": 65,
+      "01110": 74,
+      "00101": 66,
+      "01010": 63,
+      "11100": 59,
+      "00111": 70,
+      "10000": 67,
+      "00100": 64,
+      "01111": 71,
+      "10100": 54
+    },
+    "p_feasible": 0.5029296875,
+    "p_feasible_wilson95": [
+      0.48128970948630734,
+      0.5245586951858663
+    ],
+    "p_optimal_feasible": 0.06494140625,
+    "p_optimal_feasible_wilson95": [
+      0.055062253828778523,
+      0.07644965235345305
+    ],
+    "p_model_minimum": 0.03076171875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 70,
+      "probability": 0.0341796875
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2028,
+      "seed_transpiler": 2028
+    }
+  },
+  {
+    "shots": 4096,
+    "sampling_seed": 2026,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "00101": 123,
+      "01110": 124,
+      "11101": 119,
+      "11001": 135,
+      "10010": 141,
+      "11111": 132,
+      "11000": 112,
+      "01001": 124,
+      "00010": 132,
+      "01100": 139,
+      "01011": 136,
+      "10000": 129,
+      "00001": 129,
+      "10011": 136,
+      "00100": 125,
+      "01010": 136,
+      "01101": 132,
+      "00011": 116,
+      "10100": 143,
+      "10001": 126,
+      "00000": 142,
+      "01111": 135,
+      "10111": 117,
+      "01000": 110,
+      "11100": 139,
+      "00110": 109,
+      "11010": 121,
+      "00111": 145,
+      "10101": 118,
+      "11110": 124,
+      "10110": 128,
+      "11011": 119
+    },
+    "p_feasible": 0.505126953125,
+    "p_feasible_wilson95": [
+      0.48981762867527984,
+      0.5204266695434612
+    ],
+    "p_optimal_feasible": 0.068603515625,
+    "p_optimal_feasible_wilson95": [
+      0.061259467868751284,
+      0.07675601058290402
+    ],
+    "p_model_minimum": 0.0322265625,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 145,
+      "probability": 0.035400390625
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2026,
+      "seed_transpiler": 2026
+    }
+  },
+  {
+    "shots": 4096,
+    "sampling_seed": 2027,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "10011": 132,
+      "11100": 147,
+      "00001": 131,
+      "01001": 127,
+      "10110": 137,
+      "01101": 164,
+      "01100": 115,
+      "00101": 144,
+      "11000": 116,
+      "01010": 117,
+      "11001": 147,
+      "00011": 122,
+      "01000": 116,
+      "00010": 115,
+      "01111": 135,
+      "00110": 110,
+      "10010": 120,
+      "11111": 128,
+      "10101": 139,
+      "11101": 120,
+      "10001": 128,
+      "10100": 124,
+      "00100": 127,
+      "01011": 125,
+      "01110": 112,
+      "00000": 131,
+      "10000": 136,
+      "11110": 124,
+      "11011": 134,
+      "00111": 137,
+      "10111": 120,
+      "11010": 116
+    },
+    "p_feasible": 0.48828125,
+    "p_feasible_wilson95": [
+      0.47299110665544525,
+      0.5035933545588613
+    ],
+    "p_optimal_feasible": 0.06201171875,
+    "p_optimal_feasible_wilson95": [
+      0.05502814125458894,
+      0.06981609663011372
+    ],
+    "p_model_minimum": 0.0400390625,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 137,
+      "probability": 0.033447265625
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2027,
+      "seed_transpiler": 2027
+    }
+  },
+  {
+    "shots": 4096,
+    "sampling_seed": 2028,
+    "training_seed": 2026,
+    "training_result": "penalty_0_7_seed_2026.json",
+    "gamma": [
+      1.6096795942905249
+    ],
+    "beta": [
+      3.137209082665273
+    ],
+    "counts": {
+      "10010": 127,
+      "01100": 128,
+      "10011": 134,
+      "00110": 137,
+      "00101": 148,
+      "11111": 127,
+      "10101": 129,
+      "01000": 126,
+      "11110": 144,
+      "01011": 134,
+      "01110": 134,
+      "10110": 151,
+      "11011": 139,
+      "11010": 103,
+      "11001": 131,
+      "01010": 120,
+      "11100": 123,
+      "11000": 109,
+      "00100": 124,
+      "01111": 145,
+      "00010": 130,
+      "00111": 122,
+      "10000": 124,
+      "00001": 126,
+      "11101": 123,
+      "10100": 123,
+      "10111": 128,
+      "01001": 119,
+      "00011": 133,
+      "10001": 118,
+      "01101": 120,
+      "00000": 117
+    },
+    "p_feasible": 0.49365234375,
+    "p_feasible_wilson95": [
+      0.4783541995376782,
+      0.5089623836200712
+    ],
+    "p_optimal_feasible": 0.05908203125,
+    "p_optimal_feasible_wilson95": [
+      0.052266038627501295,
+      0.06672431456077797
+    ],
+    "p_model_minimum": 0.029296875,
+    "best_feasible": {
+      "bitstring": "00111",
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "ids_rute": [
+        0,
+        1,
+        2
+      ],
+      "rute": [
+        {
+          "id": 0,
+          "cities": [
+            "Iași",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 4,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 1,
+          "cities": [
+            "Iași",
+            "Cluj-Napoca"
+          ],
+          "cost": 3,
+          "value": 6,
+          "border_cost": 0,
+          "international": false
+        },
+        {
+          "id": 2,
+          "cities": [
+            "Cluj-Napoca",
+            "Brașov"
+          ],
+          "cost": 2,
+          "value": 5,
+          "border_cost": 0,
+          "international": false
+        }
+      ],
+      "cost_total": 7,
+      "valoare_totala": 15,
+      "valid": true,
+      "energie": -15.0,
+      "count": 122,
+      "probability": 0.02978515625
+    },
+    "resources": {
+      "adancime_circuit": 10,
+      "porti_doi_qubiti": 10,
+      "registru_masurare": "plan",
+      "optimization_level": 1,
+      "backend_name": "Aer statevector",
+      "seed_simulator": 2028,
+      "seed_transpiler": 2028
+    }
+  }
+]

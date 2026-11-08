@@ -61,7 +61,7 @@ class ExperimentResult(TypedDict):
     quantum: dict[str, Any]
     samples: dict[str, Any]
     counts_by_backend: dict[str, dict[str, int]]
-    exact_ideal_statistics: dict[str, float]
+    exact_ideal_statistics: dict[str, float] | None
     classical_analysis: dict[str, Any]
     distribution_audits: dict[str, Any]
     sampled_plan_audits: dict[str, Any]
@@ -90,7 +90,9 @@ def run_railway_optimization(scenario_input: RailwayScenario,
 
 def references(routes, budget, penalty):
     if len(routes)>10:
-        raise ValueError('Interactive experiments support at most 10 decisions.')
+        from scalable_reference import CostReference
+        reference=CostReference(routes,budget,penalty)
+        return reference,reference.classical,reference.minimum
     if not routes:
         plan=dict(bits=[],bitstring='',ids_rute=[],rute=[],cost_total=0,valoare_totala=0,
                   valid=True,energie=float(penalty*budget**2))
@@ -106,6 +108,8 @@ def references(routes, budget, penalty):
 
 
 def summarize(counts, plans):
+    if hasattr(plans,'summarize'):
+        return plans.summarize(counts)
     n = len(plans[0]['bits'])
     by_key = {p['bitstring']: p for p in plans}
     total = sum(counts.values())
@@ -155,8 +159,11 @@ def run_experiment(routes, budget=7, penalty=.7, p=1, shots=2048, seed=2026,
     original_routes=deepcopy(routes)
     state=scenario(routes,incidents,scenario_time)
     routes=state['available_routes']
-    if mode=='compare' and len(routes)>8:
-        raise ValueError('Noisy comparison supports at most 8 decisions.')
+    if len(routes)>10:
+        from scalable_experiment import run_large_experiment
+        return run_large_experiment(original_routes,state,dict(budget=budget,penalty=penalty,p=p,
+            shots=shots,seed=seed,maxiter=maxiter,restarts=restarts,mode=mode,optimizer=optimizer,
+            optimizer_tol=optimizer_tol,transpilation_level=transpilation_level))
     started = perf_counter()
     reference_started=perf_counter()
     plans, classical, minimum = references(routes,budget,penalty)

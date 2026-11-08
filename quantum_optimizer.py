@@ -17,12 +17,14 @@ from qiskit_aer import AerSimulator
 from scipy.optimize import minimize
 
 
-# Explicit resource policy: no arbitrary exponential allocations or circuits.
+# Exact-state thresholds, not route-selection limits. Larger selections use MPS.
 MAX_QUBITS = 20
 MAX_NOISY_QUBITS = 10
 MAX_DEPTH = 100
 MAX_TWO_QUBIT_GATES = 20_000
 MAX_INTEGER_TOTAL = 2**50  # exact integer sums in float64; safe int64 vectors
+MPS_BOND_DIMENSION = 64
+MPS_TRUNCATION_THRESHOLD = 1e-8
 
 
 def _integer(value, name, minimum=0):
@@ -203,9 +205,8 @@ def parameterized_qaoa(qubo, p=1, measure=False):
         raise ValueError("measure must be boolean")
     ising = qubo_to_ising(qubo)
     n = len(ising['h'])
-    if n > MAX_QUBITS or p > MAX_DEPTH or p * np.count_nonzero(ising['J']) > MAX_TWO_QUBIT_GATES:
-        raise ValueError(f"resource limit: <= {MAX_QUBITS} qubits, p <= {MAX_DEPTH}, "
-                         f"<= {MAX_TWO_QUBIT_GATES} RZZ gates")
+    if p > MAX_DEPTH:
+        raise ValueError(f'resource limit: p <= {MAX_DEPTH}')
     parameters = ParameterVector('theta', 2*p)
     qc = QuantumCircuit(n)
     qc.h(range(n))
@@ -271,6 +272,11 @@ def _sample_counts(bound, shots, seed, mode, optimization_level=1):
         raise ValueError('optimization_level must be 0..3')
     measured = bound.copy()
     _add_measurements(measured)
+    use_mps = bound.num_qubits > (MAX_NOISY_QUBITS if mode == 'noisy' else MAX_QUBITS)
+    options = dict(method='matrix_product_state', max_parallel_threads=1,
+                   matrix_product_state_max_bond_dimension=MPS_BOND_DIMENSION,
+                   matrix_product_state_truncation_threshold=MPS_TRUNCATION_THRESHOLD,
+                   mps_sample_measure_algorithm='mps_apply_measure') if use_mps else {}
     if mode == 'noisy':
         from qiskit.providers.fake_provider import GenericBackendV2
         width = max(2, bound.num_qubits)
@@ -279,9 +285,10 @@ def _sample_counts(bound, shots, seed, mode, optimization_level=1):
             coupling_map=[[i, j] for i in range(width) for j in range(width) if abs(i-j) == 1],
             seed=seed, noise_info=True)
         compiled = transpile(measured, backend, optimization_level=optimization_level, seed_transpiler=seed)
-        simulator = AerSimulator.from_backend(backend, method='density_matrix', max_parallel_threads=1)
+        simulator = AerSimulator.from_backend(backend, **options) if use_mps else AerSimulator.from_backend(
+            backend, method='density_matrix', max_parallel_threads=1)
     else:
-        simulator = AerSimulator(method='statevector', max_parallel_threads=1)
+        simulator = AerSimulator(**options) if use_mps else AerSimulator(method='statevector', max_parallel_threads=1)
         compiled = transpile(measured, simulator, optimization_level=optimization_level, seed_transpiler=seed)
     result = simulator.run(compiled, shots=shots, seed_simulator=seed).result()
     # transpile preserves classical plan[i] even when moving logical qubits.
@@ -291,6 +298,11 @@ def _sample_counts(bound, shots, seed, mode, optimization_level=1):
                      registru_masurare='plan', optimization_level=optimization_level,
                      backend_name='GenericBackendV2 synthetic + Aer density_matrix' if mode=='noisy' else 'Aer statevector',
                      seed_simulator=seed, seed_transpiler=seed)
+    resources.update(simulation_method='matrix_product_state' if use_mps else ('density_matrix' if mode == 'noisy' else 'statevector'),
+                     approximate=use_mps)
+    if use_mps:
+        resources.update(backend_name='GenericBackendV2 synthetic + Aer MPS' if mode == 'noisy' else 'Aer MPS',
+                         max_bond_dimension=MPS_BOND_DIMENSION, truncation_threshold=MPS_TRUNCATION_THRESHOLD)
     if compiled.layout is not None:
         resources['mapare_finala'] = [int(i) for i in compiled.layout.final_index_layout(filter_ancillas=True)]
     return counts, resources
@@ -347,9 +359,10 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
         raise ValueError("backend_mode must be 'ideal' or 'noisy'")
     n = len(routes)
     if n > MAX_QUBITS:
-        raise ValueError(f"statevector resource limit: at most {MAX_QUBITS} routes")
-    if backend_mode == 'noisy' and n > MAX_NOISY_QUBITS:
-        raise ValueError(f"noisy density-matrix limit: {MAX_NOISY_QUBITS} qubits; use ideal")
+        from scalable_quantum import optimize_mps
+        return optimize_mps(routes,budget,penalty,p=p,shots=shots,maxiter=maxiter,seed=seed,
+            restarts=restarts,backend_mode=backend_mode,transpilation_level=transpilation_level,
+            optimizer_tol=optimizer_tol)
     if n >= 19 or backend_mode == 'noisy':
         warnings.warn("Exponential local simulation cost; noisy mode samples only the final circuit.",
                       RuntimeWarning, stacklevel=2)
@@ -426,6 +439,11 @@ def optimizeaza_qaoa(rute, buget, penalizare=4.0, *, p=1, shots=1024,
         cel_mai_frecvent_plan=summary['most_frequent'], top_planuri=summary['top'],
         counts=summary['counts'],
         statevector_probabilities={format(k,f'0{n}b'):float(prob) for k,prob in enumerate(probabilities)} if return_probabilities else None,
+        exact_ideal_statistics=dict(p_feasible=float(probabilities[feasible].sum()),
+            p_optimal_feasible=float(probabilities[optimum].sum()),
+            p_model_minimum=float(probabilities[np.isclose(energies,energies.min(),rtol=0,atol=1e-9)].sum()),
+            expected_energy=float(probabilities @ energies), mean_true_score=float(probabilities @ values),
+            over_budget_rate=float(probabilities[~feasible].sum())),
         optimizare=dict(metoda='COBYLA', restart_selectat=best_run, rulari=runs, history=history),
         statistici=dict(numar_qubiti=n, qaoa_depth=p, shots=shots, maxiter=maxiter,
                         restarts=restarts, evaluari=evaluations,

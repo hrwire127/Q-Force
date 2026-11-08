@@ -32,24 +32,65 @@ The notebook also uses the shared IBM environment check and local credentials.
 
 ## Notebook kernel
 
-The notebook must use **Quantum Railways (IBM)** to run the IBM cells. This
-kernel uses `.venv-ibm`, which contains the compatible IBM SDK and Qiskit.
-The ordinary application environment has Qiskit 2.1 and no IBM client.
+The notebook's QPU cell automatically executes the bound circuit through
+`.venv-ibm`, which contains the compatible IBM SDK and Qiskit. The notebook can
+keep the ordinary Qiskit 2.1 kernel, even though that kernel has no IBM client.
+The circuit crosses the interpreter boundary using Qiskit's QPY format; only
+plain JSON measurements and job metadata are returned to the notebook.
 
-The kernel is already registered on this machine. On another machine, install
-`requirements-ibm.txt` and register it from the repository directory:
+`ibm_notebook_runner.run_notebook_qpu` saves the job ID before waiting for results
+under `output/ibm_notebook/<circuit-fingerprint>/job.json`. Re-running the same
+cell recovers its matching job rather than submitting a duplicate. Terminal job
+failures and measurement width/shot mismatches are reported as errors. No local
+simulation is substituted for real QPU measurements. The worker reads the latest
+local credentials and backend, avoiding stale values cached by a live kernel.
+
+The local backend setting is `auto`, so discovery uses a device accessible in
+the region of the configured CRN. The new supplied instance is in `eu-de`.
+An optional `QPU_BACKEND_OVERRIDE` in the QPU cell can select a specific device.
+
+To run the whole notebook in the newer environment instead, select
+**Quantum Railways (IBM)**. This kernel is already registered on this machine.
+
+On another machine, install `requirements-ibm.txt` and register the optional
+notebook kernel from the repository directory:
 
 ```powershell
 .\.venv-ibm\Scripts\python.exe -m ipykernel install --user --name quantum-railways-ibm --display-name "Quantum Railways (IBM)"
 ```
 
-Select that kernel, then **Restart Kernel → Run All**. The setup cell installs
+When changing kernels, use **Restart Kernel → Run All**. The setup cell installs
 missing local dependencies but preserves installed versions, so it does not
 downgrade the IBM environment to Qiskit 2.1. If working in a separate hosted
 notebook environment, run `%pip install -r requirements-ibm.txt` there before
 restarting its kernel. The real-hardware cell submits only if
 `USE_REAL_HARDWARE=True`; calling `choose_backend(True, ...)` alone verifies
-the connection without submitting a job.
+the connection without submitting a job (and requires the IBM kernel if called
+directly). The QPU cell itself does not require the IBM kernel to be selected.
+
+For an explicitly authorized end-to-end QPU verification, the validation runner
+executes every notebook code cell with fresh local optimization, sends the real
+circuit through the worker, and saves an executed notebook:
+
+```powershell
+.\.venv-ibm\Scripts\python.exe validation/run_notebook_ibm.py
+```
+
+Unlike `validation/check_notebook.py`, this command enables real QPU submission
+when the notebook requests it.
+
+Verified on 8 November 2026 with fresh p=1/p=2 training in the older Qiskit 2.1
+kernel and actual IBM execution in the isolated environment:
+
+- Backend: `ibm_aachen`, European instance.
+- Job: `dbnrq9o0rnvc739762m0`, final status `DONE`.
+- 19 logical qubits, named `plan` register, 4096 measured shots.
+- Compiled circuit depth: 682.
+- Every code cell completed; successful outputs are saved in the main notebook.
+- Real counts and submission record:
+  `output/ibm_notebook/96938437dc966134a106/job.json`.
+- Independent executed copy:
+  `output/notebook_ibm_verified_20261108_020212/executed.ipynb`.
 
 ## IBM connection
 
@@ -58,9 +99,11 @@ The script reads the API key and instance CRN from the ignored local file
 during this task have been copied there without adding them to Python source.
 On another machine, configure this local file or environment variables first.
 
-The connection was verified with IBM client **0.50.1** and **ibm_marrakesh**
-(156 qubits), without submitting a QPU job. The local configuration selects that
-backend. The notebook's original **ibm_aachen** returned `device not found`.
+IBM client **0.50.1** is installed in the isolated environment. Backend names
+depend on the instance region: the former US instance offered `ibm_marrakesh`,
+whereas the newly supplied European instance offers `ibm_aachen` (156 qubits).
+The API key and CRN must belong to the same accessible instance; an inaccessible
+CRN is reported separately from a missing SDK or unavailable backend.
 
 Use a separate environment for the current IBM client, because it may require a
 newer Qiskit than the pinned local application environment:

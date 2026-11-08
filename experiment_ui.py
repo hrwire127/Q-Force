@@ -128,8 +128,12 @@ def render_experiment(routes,budget,state=None):
     config=SimulationConfig(**visible,**internal)
     fingerprint=json.dumps([routes,visible,state['incidents'],state['time']],sort_keys=True)
     active=len(state['available_routes'])
-    allowed=bool(routes) and active<=10 and (mode!='compare' or active<=8)
-    if not allowed: st.warning('Selectează maximum 10 rute disponibile, respectiv 8 pentru zgomot.')
+    allowed=bool(routes)
+    if not allowed: st.info('Selectează rutele pe care vrei să le analizezi.')
+    if active>10:
+        st.caption(f'{active} rute disponibile. Referința clasică se calculează prin programare dinamică; simularea poate dura mai mult pentru selecții mari.')
+    if active>20 or (mode=='compare' and active>10):
+        st.info('Pentru această dimensiune, simularea locală folosește aproximarea MPS. Referința clasică rămâne exactă.')
     if st.button('Rulează simularea',type='primary',disabled=not allowed):
         try:
             with st.status('Rulez optimizarea cuantică și referința clasică…') as status:
@@ -153,6 +157,8 @@ def render_experiment(routes,budget,state=None):
     if st.session_state.get('loaded_configuration')!=fingerprint:
         st.info('Configurația s-a schimbat. Rulează din nou sau încarcă o simulare din istoric pentru a vedea rezultatele ei.'); return
     result=json.loads(payload)
+    if any(resource.get('approximate') for resource in result['resources'].values()):
+        st.caption('Rezultatele cuantice includ o simulare MPS aproximată; histogramele folosesc măsurările efectiv generate.')
     st.caption('Simulare: '+result['created_utc'][:19].replace('T',' ')+' UTC')
     st.subheader('Rezultatul cuantic — cel mai bun plan fezabil găsit')
     backend=st.selectbox('Varianta cuantică',list(result['samples']),format_func=lambda m:'Ideal' if m=='ideal' else 'Cu zgomot',key='shown_quantum_backend') if len(result['samples'])>1 else 'ideal'

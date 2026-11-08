@@ -27,6 +27,11 @@ def clear_selection():
         st.session_state[f"selected_route_{route['id']}"]=False
 
 
+def select_all_routes():
+    for route in ROUTES:
+        st.session_state[f"selected_route_{route['id']}"]=True
+
+
 def sync_route_selection(route_id):
     st.session_state[f"selected_route_{route_id}"]=st.session_state[f"route_{route_id}"]
 
@@ -45,9 +50,10 @@ with budget_column:
 
 with st.sidebar:
     st.subheader('Alege conexiunile')
-    a,b=st.columns(2)
+    a,b,c=st.columns(3)
     a.button('↺ Resetează',on_click=reset_selection,width='stretch')
     b.button('Golește',on_click=clear_selection,width='stretch')
+    c.button('Toate rutele',on_click=select_all_routes,width='stretch')
     query=st.text_input('Caută rută sau oraș',placeholder='Iași, Brașov, #06',key='route_search')
     for route in ROUTES:
         name=' — '.join(route['cities'])
